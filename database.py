@@ -1,4 +1,5 @@
 '''TODO LIST:
+- INSTALL DB DRIVER (pymysql)
 - cascades
 - items, item types
 - monsters, monster types
@@ -17,7 +18,8 @@ from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from collections import defaultdict
 from settings import *
-from twisted.internet.defer import DeferredLock, Deferred, maybeDeferred
+from threading import RLock
+#from twisted.internet.defer import DeferredLock, Deferred, maybeDeferred
 
 engine = create_engine(DATABASE_CONNECTION, echo=True)
 '''
@@ -29,6 +31,7 @@ engine = create_engine('sqlite:///:memory:',
 '''
 Session = sessionmaker(bind=engine)
 
+'''
 class NamedLock(DeferredLock):
     
     def acquire(self, name='noname'):
@@ -58,6 +61,7 @@ class NamedLock(DeferredLock):
         d.addCallback(execute)
         d.addErrback(lambda i:None)
         return d
+'''
 
 class Handler(object):
 
@@ -104,7 +108,7 @@ class Handler(object):
     def __exit__(self, *args):
         ''' rollback or commit '''
         if args[0]:
-            print "NOT COMMITTED!", args
+            print ("NOT COMMITTED!", args)
         else:
             self.session.commit()
         self.session.close()
@@ -134,7 +138,7 @@ class Coord(tuple):
     def __str__(self):
         return "{},{}".format(*self)
     
-    def dist((x1,y1),(x2,y2)): #@NoSelf
+    def dist(x1_y1,x2_y2): #@NoSelf
         return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 
@@ -327,7 +331,7 @@ class Item(Object):
 class Location(Base):
     __tablename__ = 'locations'
     
-    locks = defaultdict(NamedLock)
+    locks = defaultdict(RLock)
     lock = NonDbData(locks)
     
     updaters = {}

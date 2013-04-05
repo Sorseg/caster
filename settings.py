@@ -13,4 +13,4 @@ TURN_TIMEOUT = 20
 
 #####  MISC:  #############
 
-DATABASE_CONNECTION = 'mysql://caster:sejf3sjdijoR5EVIOJ@localhost/caster'
+DATABASE_CONNECTION = 'mysql+pymysql://caster:sejf3sjdijoR5EVIOJ@localhost/caster'
