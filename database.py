@@ -1,5 +1,4 @@
 '''TODO LIST:
-- INSTALL DB DRIVER (pymysql)
 - cascades
 - items, item types
 - monsters, monster types
@@ -7,97 +6,36 @@
 - requests should not be in db at all
 '''
 
-from sqlalchemy import Column as col, Integer, String, CHAR, Float,\
-                        ForeignKey, create_engine, select
-
-from sqlalchemy.orm import relationship, sessionmaker, backref, column_property
-from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
-from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.ext.hybrid import hybrid_property
 from collections import defaultdict
 from settings import *
+from sqlalchemy import Column as col, Integer, String, CHAR, Float, ForeignKey, \
+    create_engine, select
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship, sessionmaker, backref, column_property
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.schema import UniqueConstraint
 from threading import RLock
-#from twisted.internet.defer import DeferredLock, Deferred, maybeDeferred
+import logging
+
 
 engine = create_engine(DATABASE_CONNECTION, echo=True)
-'''
-from sqlalchemy.pool import StaticPool
-engine = create_engine('sqlite:///:memory:',
-                    connect_args={'check_same_thread':False},
-                    poolclass=StaticPool,
-                    echo=False)
-'''
 Session = sessionmaker(bind=engine)
 
-'''
-class NamedLock(DeferredLock):
-    
-    def acquire(self, name='noname'):
-        d = Deferred(canceller=self._cancelAcquire)
-        d.name = name
-        if self.locked:
-            self.waiting.append(d)
-        else:
-            self.locked = True
-            d.callback(self)
-        return d
-    
-    def run(*args, **kwargs): #@NoSelf
-        """ Overriden method from twisted to use name """
-        if len(args) < 3:
-            if not args:
-                raise TypeError("run() takes at least 3 arguments")
-        self, f, name = args[:3]
-        args = args[3:]
-
-        def execute(ignoredResult):
-            d = maybeDeferred(f, *args, **kwargs)
-            d.addBoth(self._releaseAndReturn)
-            return d
-
-        d = self.acquire(name)
-        d.addCallback(execute)
-        d.addErrback(lambda i:None)
-        return d
-'''
 
 class Handler(object):
 
     def __init__(self):
         self.session = Session()
 
-    def login(self, login, md5, cr_id = None):
+    def login(self, login, md5):
         s = self.session
         q = s.query(User).filter((User.login == login) &
                                  (User.pwd == md5))
         if q.count():
             creatures = q.one().creatures
-            if not cr_id:
-                return creatures
-            cr = {str(i.id):i for i in creatures}
-            return [cr.get(cr_id, None)]
-
-
-    def draw_map(self, loc_id):
-        s = self.session
-        l = s.query(Location).filter_by(id=loc_id).one()
-        maxx, maxy = l.dimensions
-        objects = l.objects
-        objects = {o.cell.coords:o for o in objects}
-        cells = {c.coords:c for c in l.cells}
-        map = ''
-        for y in range(maxy):
-            line = ''
-            for x in range(maxx):
-                line += objects.get((x,y),cells[(x,y)]).char
-            map += line + '\n'
-            line = ''
-        return map
-
-    def get_location(self, loc_id):
-        return self.session.query(Location).get(loc_id)
+            return creatures
     
     def refresh(self, object):
         return self.session.query(type(object)).get(object.id)
@@ -107,48 +45,74 @@ class Handler(object):
 
     def __exit__(self, *args):
         ''' rollback or commit '''
-        if args[0]:
-            print ("NOT COMMITTED!", args)
-        else:
+        if not args[0]:
             self.session.commit()
         self.session.close()
 
     def __del__(self):
         self.session.close()
-        
-        
+
+
 class NonDbData(object):
     
     def __init__(self, dic):
         self.dict = dic
-        
+
     def __get__(self, obj, type):
         return obj.id and self.dict.get(obj.id, None)
-    
+
     def __set__(self, obj, value):
-        assert obj.id, "Assigning to object without id"
+        if not obj.id:
+            logging.error("Assigning to object without id")
+            return
         self.dict[obj.id] = value
-        
+
 
 class Coord(tuple):
-    
+
     def __add__(self, c):
         return Coord([i + j for i, j in zip(self, c)])
 
     def __str__(self):
         return "{},{}".format(*self)
-    
+
     def dist(x1_y1,x2_y2): #@NoSelf
         return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 
 class Space(object):
+    circle_approx = [
+                      (),
+                      ('#'),
+                      
+                      ('##',
+                       '##'),
+                              
+                      ('###',
+                       '###',
+                       '###'),
+                              
+                      (' ## ',
+                       '####',
+                       '####',
+                       ' ## '),
+                      
+                      (' ### ',
+                       '#####',
+                       '#####',
+                       '#####',
+                       ' ### ',
+                      )
+                              ]
+    
     def __init__(self, coord, size):
         self.coord = coord
         self.size = size
         
     def fits(self, new_pos, cells):
+        #TODO
         pass
+
 
 ############### MAPPING ##############
 
@@ -169,14 +133,6 @@ class Object(Base):
     
     char = col(CHAR, default='?')
 
-    def would_coords(self, pos):
-        return {Coord(pos) + (x, y)\
-        for x in range(self.size) for y in range(self.size)}
-
-    def fits(self, cell):
-        #TODO:
-        pass
-
     @property
     def coords(self):
         return Coord((self.xpos, self.ypos))
@@ -186,14 +142,15 @@ class Object(Base):
         self.xpos, self.ypos = coords
 
 
-
 class Creature(Object):
     __tablename__ = 'creatures'
     
     def __init__(self, template):
-        assert isinstance(template, CrTemplate), ("creature can be created"
+        if not isinstance(template, CrTemplate):
+            raise TypeError("creature can be created"
                                                   " only using CrTemplate,"
                                                   " not "+str(type(template)))
+            
         self.template = template
 
     __mapper_args__ = {'polymorphic_identity': 'creature'}
@@ -201,9 +158,9 @@ class Creature(Object):
     id = col(Integer, ForeignKey("objects.id"), primary_key=True)
     user_login = col(String(100), ForeignKey("users.login"))
     sight = col(Integer, default = 6) # radius of sight
-    visible_cells=association_proxy('visibilities', 'cell')
+
     max_life = col(Integer, default = 20)
-    
+    #TODO: life, mana?
     template_id = col(Integer, ForeignKey("crtemplates.id"))
     template = relationship("CrTemplate")
     
@@ -296,7 +253,7 @@ class Cell(Base):
     ypos = col(Integer)
     loc_id = col(Integer, ForeignKey("locations.id"))
     char = col(CHAR(1))
-    type = col(Integer) 
+    type = col(Integer)
 
     @property
     def coords(self):
@@ -334,9 +291,6 @@ class Location(Base):
     locks = defaultdict(RLock)
     lock = NonDbData(locks)
     
-    updaters = {}
-    updater = NonDbData(updaters)
-    
     all_requests = defaultdict(list)
     requests = NonDbData(all_requests)
 
@@ -348,37 +302,25 @@ class Location(Base):
     def dimensions(self):
         x = max([c[0] for c in self.cells])
         y = max([c[1] for c in self.cells])
-        return (x+1,y+1)
+        return (x+1, y+1)
     
     objects = relationship(Object, collection_class=attribute_mapped_collection("coords"))
     
-#    @property
-#    def items(self):
-#        items = defaultdict(list)
-#        for o in self.objects_list:
-#            if isinstance(o, Item):
-#                items[o.coords].append(o)
-#        return items
-#    
-#    @property
-#    def creatures(self):
-#        items = defaultdict(list)
-#        for o in self.objects_list:
-#            if isinstance(o, Creature):
-#                items[o.coords].append(o)
-#        return items
+    @property
+    def items(self):
+        items = defaultdict(list)
+        for o in self.objects.values():
+            if isinstance(o, Item):
+                items[o.coords].append(o)
+        return items
     
-    def draw(self):
-        data = ''
-        chars = {}
-        chars.update({c:o.char for c,o in self.cells.items()})
-        for y in range(self.dimensions[1]):
-            line = ''
-            for x in range(self.dimensions[0]):
-                line += chars.get((x,y),' ')
-            data += line + '\n'
-            
-        return data 
+    @property
+    def creatures(self):
+        items = defaultdict(list)
+        for o in self.objects.values():
+            if isinstance(o, Creature):
+                items[o.coords].append(o)
+        return items
 
     def __str__(self):
         return self.name
