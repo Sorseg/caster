@@ -10,9 +10,18 @@ import uuid
 
 logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 
+class Player:
+    def __init__(self):
+        self.login = None
+    
+    def joined(self):
+        if self.creature:
+            return True
+        return False
+
 class MainHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        self.login = None
+        self.player = Player()
 
     def on_message(self, message):
         commands.do(self, message)
