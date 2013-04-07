@@ -1,6 +1,6 @@
 import logging
 import json
-import database
+import database as db
 
 def error_sender(severity):
     def sender(reason,**kw):
@@ -41,14 +41,14 @@ def do(player, actions):
 #COMMANDS:
 
 @cmd
-def login(player, login, passw):
-    print (type(login), type(passw)) 
+def login(handler, login, passw):
+    player = handler.player 
     send = player.write_message
     if player.login:
         send(error("Already logged in"))
         return
     
-    with database.Handler() as h:
+    with db.Handler() as h:
         creatures = h.login(login, passw)
         if creatures == None:
             send(fail("Login and/or pass are wrong"))
@@ -56,6 +56,19 @@ def login(player, login, passw):
         elif not creatures:
             send(fail("Login {} has no creatures".format(login)))
             return
-
+        
+#@cmd TODO
+def join(handler, crid):
+    with database.Handler() as h:
+        crid = str(crid)
+        player.creature = h.session.merge(player.creatures[crid])
+        if not player.creature.cell:
+            requests.ENTER(player, 1)
+        else:
+            player.loc_id = player.creature.cell.loc_id
+            @update_logic.locking("get env", False, loc_id = player.loc_id)
+            def send(lock):
+                update_logic.send_environment(player, player.loc_id, h)
         
 
+        
