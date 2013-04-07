@@ -29,10 +29,10 @@ class Handler(object):
     def __init__(self):
         self.session = Session()
 
-    def login(self, login, md5):
+    def login(self, login, passw):
         s = self.session
         q = s.query(User).filter((User.login == login) &
-                                 (User.pwd == md5))
+                                 (User.pwd == passw))
         if q.count():
             creatures = q.one().creatures
             return creatures
@@ -356,6 +356,7 @@ def destroy():
 
 def create():
     session = Session()
+    session.execute("use caster;")
     Base.metadata.create_all(engine)
     import create_data
     create_data.create(session)
@@ -363,4 +364,5 @@ def create():
 
 # create tables here:
 if __name__ == '__main__':
+    destroy()
     create()

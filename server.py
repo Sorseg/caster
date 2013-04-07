@@ -12,7 +12,7 @@ logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 
 class MainHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        pass
+        self.login = None
 
     def on_message(self, message):
         commands.do(self, message)

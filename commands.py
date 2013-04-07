@@ -1,4 +1,6 @@
 import logging
+import json
+import database
 
 def error_sender(severity):
     def sender(reason,**kw):
@@ -15,7 +17,7 @@ commands = {}
 
 def cmd(func):
     " Registers a function as a command " 
-    commands[func.func_name.upper()]=func
+    commands[func.__name__.upper()]=func
     return func  
 
 def do(player, actions):
@@ -33,14 +35,27 @@ def do(player, actions):
                 return
             commands[cmd.upper()](player, **action)
     except Exception as e:
-        logging.exception()
+        logging.exception("omg")
         player.write_message(server_error(repr(e), actions = actions))
         
 #COMMANDS:
 
 @cmd
 def login(player, login, passw):
-    #TODO
-    pass
+    print (type(login), type(passw)) 
+    send = player.write_message
+    if player.login:
+        send(error("Already logged in"))
+        return
+    
+    with database.Handler() as h:
+        creatures = h.login(login, passw)
+        if creatures == None:
+            send(fail("Login and/or pass are wrong"))
+            return
+        elif not creatures:
+            send(fail("Login {} has no creatures".format(login)))
+            return
+
         
 
