@@ -4,3 +4,4 @@ caster.log
 .project
 __pycache__
 *~
+*.pyc
