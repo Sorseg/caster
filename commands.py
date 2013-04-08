@@ -31,12 +31,12 @@ def do(player, actions):
                 player.send_json(error("No such command:{} "
             "please refer to "
             "https://code.google.com/p/caster/wiki/casterJsonProtocol"
-            .format(cmd), action = action))
+            .format(cmd), actions = actions))
                 return
             commands[cmd.upper()](player, **action)
     except Exception as e:
         logging.exception("omg")
-        player.send_json(server_error(repr(e), action = action))
+        player.send_json(server_error(repr(e), actions = actions))
         
 #COMMANDS:
 
@@ -62,17 +62,19 @@ def login(handler, login, passw):
             return
         player.login = login
         player.players[login] = player
+        player.creatures = {c.id:c for c in creatures}
         
         send({"what":"login",
               "creatures":[c.short_info for c in creatures]})
         
         
-#@cmd TODO
+@cmd
 def join(handler, crid):
-    with database.Handler() as h:
-        crid = str(crid)
-        player.creature = h.session.merge(player.creatures[crid])
-        if not player.creature.cell:
+    player = handler.player
+    with db.Handler() as h:
+        player.creature = h.refresh(player.creatures[crid], crid)
+        raise NotImplementedError("join successful, but later is not implemented yet")
+        if not player.creature.cell:            
             requests.ENTER(player, 1)
         else:
             player.loc_id = player.creature.cell.loc_id
