@@ -1,10 +1,45 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+		<title>CASTER 0.0.0</title>
 		<script>
 			var ws = new WebSocket('ws://'+document.location.host);
+			var populate = function(crtr){
+		         tabBody=document.getElementById("creatures");
+		         row=document.createElement("TR");
+		         cell_id = document.createElement("TD");
+		         cell_cls = document.createElement("TD");
+		         cell_name = document.createElement("TD");
+		         cell_use = document.createElement("BUTTON");
+		         //cell_use.href = "#";
+		         cell_use.innerText = "JOIN";
+		         cell_use.onclick = function(){
+		         	ws.send(JSON.stringify(
+		         		{"what":"join",
+		         		 "crid":crtr.id
+		         		}
+		         ));
+		         }
+		         textnode_id=document.createTextNode(crtr.id);
+		         textnode_cls=document.createTextNode(crtr.cls);
+		         textnode_name=document.createTextNode(crtr.name);
+		         cell_id.appendChild(textnode_id);
+		         cell_cls.appendChild(textnode_cls);
+		         cell_name.appendChild(textnode_name);
+		         row.appendChild(cell_id);
+		         row.appendChild(cell_cls);
+		         row.appendChild(cell_name);
+		         row.appendChild(cell_use);
+		         tabBody.appendChild(row);
+			}
 			ws.onmessage = function(message) {
-				document.getElementsByName('output')[0].value += "\n"+message.data; 
+				document.getElementsByName('output')[0].value += "\n"+message.data;
+				var obj = JSON.parse(message.data)
+				if (obj.what == "login"){
+					for(var i = 0; i<obj.creatures.length; i++ ){
+						populate(obj.creatures[i]);
+					}
+				}
 			};
 			ws.onclose = function(){
 				document.getElementsByName('output')[0].value += "\nCLOSED"
@@ -35,8 +70,11 @@
 		</table>
 	</form>
 	
+	<table id="creatures" style="border: solid 1px grey;">
+		<tr><th>ID</th><th>Class</th><th>Name</th><th>Use</th></tr>
+	</table>
 	
-	<textarea name="output" rows="8" cols="40">
+	<textarea name="output" rows="15" cols="80">
 	</textarea>
 	
 	</body>
