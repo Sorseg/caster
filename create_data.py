@@ -3,18 +3,21 @@ from database import *
 def create(session):
     #populate tables:
     if not session.query(User).filter_by(login ='sors').count():
-        d = CrTemplate(name='drakonian', model='drak1')
+        d = CrTemplate(cls='drakonian', model='drak1')
         sors = User(login='sors', pwd ='asdf2')
         drak = Creature(d)
         drak.char = '@'
+        drak.name = "Malfoy"
         sors.creatures = [drak]
         session.add(sors)
         
     if not session.query(User).filter_by(login = 'demoth').count():
         demoth = User(login='demoth', pwd = 'asdf')
-        k = CrTemplate(name='kob', model='kob1')
+        k = CrTemplate(cls='kob', model='kob1')
         kob = Creature(k)
         mer = Creature(k)
+        kob.name = "Kamui"
+        mer.name = "Rorkaloler"
         kob.char='&'
         mer.char='M'
         demoth.creatures = [kob, mer]
@@ -41,7 +44,7 @@ def create(session):
         sw = Weapon(t)
         sw.char=')'
         sw.location = cave
-        sw.coords = (3,3)
+        sw.coords = (3, 3)
         session.add(sw)
                 
     session.commit()

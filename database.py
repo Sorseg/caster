@@ -165,7 +165,8 @@ class Creature(Object):
     template = relationship("CrTemplate")
     
     model = association_proxy('template','model')
-    name = association_proxy('template','name')
+    name = col(String(100), nullable = False, unique = True)
+    cls = association_proxy('template','cls')
     descr = association_proxy('template','descr')
     equipped_id = col(Integer, ForeignKey("items.id", use_alter=True, name="fk_equipped"))
     equipped = relationship("Item", primaryjoin="Creature.equipped_id==Item.id", uselist=False, post_update=True,
@@ -177,6 +178,13 @@ class Creature(Object):
         #   return self.equipped.damage
         return 1
     
+    @property
+    def short_info(self):
+        return {"type":self.type,
+                "model":self.model,
+                "id":self.id,
+                "name":self.name}
+    
     def __str__(self):
         return "({}){}:{}".format(self.id, self.user_login, self.name)
 
@@ -187,7 +195,7 @@ class CrTemplate(Base):
     __tablename__ = 'crtemplates'
 
     id = col(Integer, primary_key=True)
-    name = col(String(200))
+    cls = col(String(200))
     descr = col(String(200))
     model = col(String(200))
     str = col(Integer)
