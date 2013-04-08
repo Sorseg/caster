@@ -28,22 +28,22 @@ def do(player, actions):
         for action in js:
             cmd = action.pop('what')
             if cmd.upper() not in commands:
-                player.write_message(error("No such command:{} "
+                player.send_json(error("No such command:{} "
             "please refer to "
             "https://code.google.com/p/caster/wiki/casterJsonProtocol"
-            .format(cmd), actions = actions))
+            .format(cmd), action = action))
                 return
             commands[cmd.upper()](player, **action)
     except Exception as e:
         logging.exception("omg")
-        player.write_message(server_error(repr(e), actions = actions))
+        player.send_json(server_error(repr(e), action = action))
         
 #COMMANDS:
 
 @cmd
 def login(handler, login, passw):
     player = handler.player 
-    send = player.write_message
+    send = handler.send_json
     if player.login:
         send(error("Already logged in"))
         return
@@ -56,6 +56,16 @@ def login(handler, login, passw):
         elif not creatures:
             send(fail("Login {} has no creatures".format(login)))
             return
+        
+        if login in player.players:
+            send(fail("Already logged in"))
+            return
+        player.login = login
+        player.players[login] = player
+        
+        send({"what":"login",
+              "creatures":[c.short_info for c in creatures]})
+        
         
 #@cmd TODO
 def join(handler, crid):

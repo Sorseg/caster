@@ -7,10 +7,13 @@ import logic
 import commands
 import logging
 import uuid
+import json
 
 logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 
 class Player:
+    players = {}
+    
     def __init__(self):
         self.login = None
     
@@ -18,6 +21,7 @@ class Player:
         if self.creature:
             return True
         return False
+    
 
 class MainHandler(tornado.websocket.WebSocketHandler):
     def open(self):
@@ -29,6 +33,11 @@ class MainHandler(tornado.websocket.WebSocketHandler):
     def on_close(self):
         #TODO: logout
         pass
+    
+    def send_json(self, msg):
+        if isinstance(msg, dict):
+            msg = json.dumps(msg)
+        self.write_message(msg)
     
 
 application = tornado.web.Application([
