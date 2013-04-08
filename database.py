@@ -37,8 +37,12 @@ class Handler(object):
             creatures = q.one().creatures
             return creatures
     
-    def refresh(self, object):
-        return self.session.query(type(object)).get(object.id)
+    def refresh(self, object, id = None):
+        q = self.session.query(type(object))
+        if id:
+            return q.get(id)
+        else:
+            return q.get(object.id)
 
     def __enter__(self):
         return self
@@ -183,7 +187,8 @@ class Creature(Object):
         return {"type":self.type,
                 "model":self.model,
                 "id":self.id,
-                "name":self.name}
+                "name":self.name,
+                "cls":self.cls}
     
     def __str__(self):
         return "({}){}:{}".format(self.id, self.user_login, self.name)
