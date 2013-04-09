@@ -2,6 +2,7 @@ import logging
 import json
 import database as db
 import logic
+import requests
 
 def error_sender(severity):
     def sender(reason,**kw):
