@@ -5,25 +5,19 @@ TODO: rewrite ALL
 import database as db
 import logging
 import commands as cmd
-from update_logic import locking, check_update
+from logic import locking, check_update
 from collections import namedtuple
 
 # request functions to perform an action
 requests = {}
 
 def req(func):
-    requests[func.func_name.upper()] = func
+    requests[func.__name__.upper()] = func
     return func
 
 def create_request(**kw):
     db.Location.requests[req['loc_id']].append(kw)
 
-
-class Request:
-    def __init__(self, type_, loc_id, target_turn):
-        self.type = type_
-        self.loc_id = loc_id
-        self.target_turn = target_turn
 
 ########### SYSTEM REQUESTS: ###########
 
@@ -36,8 +30,8 @@ def ENTER(player, loc_id, x_y = (None,None)):
 
     player.loc_id = loc_id
 
-    @locking("system", loc_id = loc_id)
-    def add(lock):
+    @locking(loc_id = loc_id, can_cancel = False)
+    def _():
         with db.Handler() as h:
             if x == None or y == None:
                 targ_cell = None
@@ -51,10 +45,10 @@ def ENTER(player, loc_id, x_y = (None,None)):
         player.committed = True
         check_update(player)
 
+
 def EXIT(player):
     ''' removes creature from location '''
     # TODO:
-
 
 ########### REQUESTS: ###########
 
