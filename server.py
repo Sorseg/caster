@@ -37,11 +37,10 @@ class MainHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         #TODO: logout
-        pass
+        Player.players.pop(self.player.login, None)
     
     def send_json(self, msg):
-        if isinstance(msg, dict):
-            msg = json.dumps(msg)
+        msg = json.dumps(msg)
         self.write_message(msg)
     
 
@@ -53,4 +52,6 @@ application = tornado.web.Application([
 
 if __name__ == "__main__":
     application.listen(8888)
-    tornado.ioloop.IOLoop.instance().start()
+    loop = tornado.ioloop.IOLoop.instance()
+    logic.init(loop)
+    loop.start()
