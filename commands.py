@@ -1,6 +1,7 @@
 import logging
 import json
 import database as db
+import logic
 
 def error_sender(severity):
     def sender(reason,**kw):
@@ -66,21 +67,15 @@ def login(handler, login, passw):
         
         send({"what":"login",
               "creatures":[c.short_info for c in creatures]})
-        
-        
+
+
 @cmd
 def join(handler, crid):
     player = handler.player
     with db.Handler() as h:
-        player.creature = h.refresh(player.creatures[crid], crid)
+        player.creature = h.refresh(player.creatures[crid])
         raise NotImplementedError("join successful, but later is not implemented yet")
-        if not player.creature.cell:            
+        if not player.creature.cell:
             requests.ENTER(player, 1)
         else:
-            player.loc_id = player.creature.cell.loc_id
-            @update_logic.locking("get env", False, loc_id = player.loc_id)
-            def send(lock):
-                update_logic.send_environment(player, player.loc_id, h)
-        
-
-        
+            logic.send_environment(player)

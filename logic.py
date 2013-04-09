@@ -1,11 +1,21 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import RLock
-import database
-LOCATIONS = list(range(10))
-
-locks = {i:RLock() for i in LOCATIONS}
+import database as db
+from functools import wraps
+from collections import defaultdict
 
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
-def digest(handler, message):
-            handler.write_message("ASDF "+message)
+loc_locks = defaultdict(RLock)
+
+def locking(loc_id):
+    def wrapper(func):
+        @EXECUTOR.submit
+        def job():
+            with loc_locks[loc_id]:
+                func()
+    return wrapper
+
+
+def send_environment(player):
+    pass
