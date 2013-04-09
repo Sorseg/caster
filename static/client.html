@@ -11,7 +11,6 @@
 		         cell_cls = document.createElement("TD");
 		         cell_name = document.createElement("TD");
 		         cell_use = document.createElement("BUTTON");
-		         //cell_use.href = "#";
 		         cell_use.innerText = "JOIN";
 		         cell_use.onclick = function(){
 		         	ws.send(JSON.stringify(
@@ -42,9 +41,8 @@
 				}
 			};
 			ws.onclose = function(){
-				document.getElementsByName('output')[0].value += "DISCONNECTED\n"
-				
-			} 
+				document.getElementsByName('output')[0].value += "DISCONNECTED\n";
+			}
 			function do_login(form)
 			{
 				f = document.getElementsByName('login_form')[0]
