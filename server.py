@@ -17,7 +17,8 @@ logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 class Player:
     players = {}
     
-    def __init__(self):
+    def __init__(self, handler):
+        self.handler = handler
         self.login = None
     
     def joined(self):
@@ -28,9 +29,10 @@ class Player:
 
 class MainHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        self.player = Player()
+        self.player = Player(self)
 
     def on_message(self, message):
+        logging.debug("Message: "+message)
         commands.do(self, message)
 
     def on_close(self):
