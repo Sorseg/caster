@@ -18,14 +18,21 @@ def req(func):
 def create_request(**kw):
     db.Location.requests[req['loc_id']].append(kw)
 
+
+class Request:
+    def __init__(self, type_, loc_id, target_turn):
+        self.type = type_
+        self.loc_id = loc_id
+        self.target_turn = target_turn
+
 ########### SYSTEM REQUESTS: ###########
 
 def ENTER(player, loc_id, x_y = (None,None)):
-    x,y = x_y
     ''' Places character at designated location or if not specified: any free safe location '''
+    x,y = x_y
 
     if not player.joined:
-        return
+        raise Exception("Not joined trying to enter")
 
     player.loc_id = loc_id
 
