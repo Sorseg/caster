@@ -184,8 +184,7 @@ class Creature(Object):
     
     @property
     def short_info(self):
-        return {"type":self.type,
-                "model":self.model,
+        return {"model":self.model,
                 "id":self.id,
                 "name":self.name,
                 "cls":self.cls}
@@ -302,9 +301,6 @@ class Location(Base):
     __tablename__ = 'locations'
     
     current_turn = col(BigInteger)
-    
-    all_requests = defaultdict(list)
-    requests = NonDbData(all_requests)
 
     id = col(Integer, primary_key=True)
     name = col(String(50))
@@ -318,6 +314,7 @@ class Location(Base):
     
     objects = relationship(Object, collection_class=attribute_mapped_collection("coords"))
     
+    #TODO: optmimze
     @property
     def items(self):
         items = defaultdict(list)
@@ -338,7 +335,7 @@ class Location(Base):
         return self.name
 
     def __repr__(self):
-        return '<Location:{}({})>'.format(self.name,self.id)
+        return '<Location:{}({})>'.format(self.name, self.id)
 
 
 class Weapon(Item):
