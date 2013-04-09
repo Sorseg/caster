@@ -33,7 +33,7 @@
 		         tabBody.appendChild(row);
 			}
 			ws.onmessage = function(message) {
-				document.getElementsByName('output')[0].value += "\n"+message.data;
+				document.getElementsByName('output')[0].value += message.data+'\n';
 				var obj = JSON.parse(message.data)
 				if (obj.what == "login"){
 					for(var i = 0; i<obj.creatures.length; i++ ){
@@ -42,7 +42,8 @@
 				}
 			};
 			ws.onclose = function(){
-				document.getElementsByName('output')[0].value += "\nCLOSED"
+				document.getElementsByName('output')[0].value += "DISCONNECTED\n"
+				
 			} 
 			function do_login(form)
 			{
