@@ -9,7 +9,7 @@
 from collections import defaultdict
 from settings import *
 from sqlalchemy import Column as col, Integer, String, CHAR, Float, ForeignKey, \
-    create_engine, select
+    create_engine, select, BigInteger
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -21,7 +21,7 @@ import logging
 
 
 engine = create_engine(DATABASE_CONNECTION, echo=True)
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, expire_on_commit = False)
 
 
 class Handler(object):
@@ -301,8 +301,7 @@ class Item(Object):
 class Location(Base):
     __tablename__ = 'locations'
     
-    locks = defaultdict(RLock)
-    lock = NonDbData(locks)
+    current_turn = col(BigInteger)
     
     all_requests = defaultdict(list)
     requests = NonDbData(all_requests)
