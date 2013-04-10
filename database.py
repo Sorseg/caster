@@ -134,7 +134,6 @@ class Object(Base):
     xpos = col(Integer)
     ypos = col(Integer)
     size = col(Integer, default = 1)
-    
     char = col(CHAR, default='?')
 
     @property
@@ -300,7 +299,7 @@ class Item(Object):
 class Location(Base):
     __tablename__ = 'locations'
     
-    current_turn = col(BigInteger)
+    current_turn = col(BigInteger, nullable = False, default = 0)
 
     id = col(Integer, primary_key=True)
     name = col(String(50))
