@@ -3,14 +3,15 @@
 TODO:
 - connection timeout
 '''
+import json
+import logging
+import sys
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-import logic
+
 import commands
-import logging
-import uuid
-import json
+import logic
 
 logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 
