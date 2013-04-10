@@ -14,7 +14,7 @@ loc_updaters = {}
 loc_requests = defaultdict(list)
 
 
-def locking(loc_id, can_cancel = True):
+def locking(loc_id):
     def wrapper(func):
         @EXECUTOR.submit
         def job():
@@ -24,25 +24,46 @@ def locking(loc_id, can_cancel = True):
 
 
 def send_environment(player):
-    pass
+    #TODO: something if location of creature changes
+    id = player.creature.loc_id
+    @locking(id)
+    def _():
+        with db.Handler() as h:
+            
+            env = {"what":"environment"}
+        
+        
+
+def add_updater(loc_id):
+    upd = tornado.ioloop.PeriodicCallback(create_loc_updater(location.id), 1000*TIMEOUT, loop)
+    loc_updaters[location.id] = upd
+    upd.start()
 
 def check_update(player):
     '''TODO: Add updater as soon as player enters location
     '''
+    if player.loc_id not in loc_updaters:
+        add_updater(player.loc_id)
     
-def update_loc(id):
+def create_loc_updater(id):
     def updater():
-        #TODO:
-        logging.info("updating", id)
+        @locking(id)
+        def _():
+            with db.handler() as h:
+                logging.info("updating", id)
+                l = h.query(db.Location).get(id)
+                logging.info("Turn #{}".format(l.current_turn))
+                for r in loc_requests[id]:
+                    logging.debug("Processing {!s}".format(r))
+                l.current_turn += 1
+            
     return updater
-    
     
 def init(loop):
     with db.Handler() as h:
         for location in h.session.query(db.Location):
             if location.creatures:
-                upd = tornado.ioloop.PeriodicCallback(update_loc(location.id), 1000*TIMEOUT, loop)
-                loc_updaters[location.id] = upd
-                upd.start()
+                add_updater(location.id)
+
 
                 
