@@ -22,7 +22,7 @@ def cmd(func):
     commands[func.__name__.upper()]=func
     return func  
 
-def do(player, actions):
+def do(handler, actions):
     try:
         js = json.loads(actions)
         if not type(js) is list:
@@ -30,15 +30,15 @@ def do(player, actions):
         for action in js:
             cmd = action.pop('what')
             if cmd.upper() not in commands:
-                player.send_json(error("No such command:{} "
+                handler.send_json(error("No such command:{} "
             "please refer to "
             "https://code.google.com/p/caster/wiki/casterJsonProtocol"
             .format(cmd), actions = actions))
                 return
-            commands[cmd.upper()](player, **action)
+            commands[cmd.upper()](handler, **action)
     except Exception as e:
         logging.exception("omg")
-        player.send_json(server_error(repr(e), actions = actions))
+        handler.send_json(server_error(repr(e), actions = actions))
         
 #COMMANDS:
 
@@ -76,7 +76,11 @@ def join(handler, crid):
     with db.Handler() as h:
         player.creature = h.refresh(player.creatures[crid])
         raise NotImplementedError("join successful, but later is not implemented yet")
-        if not player.creature.cell:
+        if any( c == None for c in player.creature.coords):
             requests.ENTER(player, 1)
         else:
             logic.send_environment(player)
+            
+@cmd 
+def request(handler):
+    pass
