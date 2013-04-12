@@ -78,8 +78,7 @@ def join(handler, crid):
         raise NotImplementedError("join successful, but later is not implemented yet")
         if any( c == None for c in player.creature.coords):
             requests.ENTER(player, 1)
-        else:
-            logic.send_environment(player)
+        logic.send_environment(player)
             
 @cmd 
 def request(handler):
