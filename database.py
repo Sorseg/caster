@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.3
 '''TODO LIST:
 - cascades
 - items, item types
@@ -204,6 +205,7 @@ class CrTemplate(Base):
     str = col(Integer)
     dex = col(Integer)
     int = col(Integer)
+    size = col(Integer, nullable = False, default = 2)
     # creatureattrs =  relationship("CrTemplAttribute") TODO
     life = col(Integer)
     mana = col(Integer)
@@ -250,10 +252,13 @@ class User(Base):
 
 class Cell(Base):
     
-    WALL = 0
-    FLOOR = 1
-    WATER = 2
-    LAVA = 3
+    types = {
+             0:"wall",
+             1:"floor",
+             2:"water",
+             3:"lava"}
+    
+    types.update({v:k for k,v in types.items()})
     
     __tablename__ = 'cells'
     __table_args__ = (
@@ -264,7 +269,18 @@ class Cell(Base):
     ypos = col(Integer)
     loc_id = col(Integer, ForeignKey("locations.id"))
     char = col(CHAR(1))
-    type = col(Integer)
+    _type = col(Integer)
+    
+    @property
+    def type(self):
+        return self.types[self._type]
+    
+    @type.setter
+    def type(self, value):
+        if isinstance(value, int):
+            self._type = int
+        else:
+            self._type = self.types[value]
 
     @property
     def coords(self):

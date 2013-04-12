@@ -29,7 +29,7 @@ def create(session):
         map = open('maps/1.map').read()
         for y, line in enumerate(map.split('\n')):
             for x, symb in enumerate(line):
-                c = Cell(char = symb, coords = (x,y))
+                c = Cell(char = symb, coords = (x,y), type = ('floor' if symb == '.' else 'wall'))
                 cells.append(c)
         cave.cells = {c.coords:c for c in cells}
         session.add(cave)
