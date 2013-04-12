@@ -19,18 +19,31 @@ def locking(loc_id):
         @EXECUTOR.submit
         def job():
             with loc_locks[loc_id]:
-                func()
+                try:
+                    func()
+                except:
+                    logging.exception("Error in locking function")
     return wrapper
 
 
 def send_environment(player):
     #TODO: something if location of creature changes
-    id = player.creature.loc_id
+    id = player.creature.loc_id or player.loc_id
     @locking(id)
     def _():
         with db.Handler() as h:
+            logging.info("ID OF LOCATION: {!s}".format(id))
             
-            env = {"what":"environment"}
+            loc = h.session.query(db.Location).get(id)
+            env = dict(what = "environment",
+                       location = id,
+                       turn = loc.current_turn,
+                       )
+            env['cells'] = [c.info() for c in loc.cells.values()]
+            env['objects'] = [o.info() for o in loc.objects.values()]
+            logging.info("Sending env")
+            player.handler.send_json(env)
+            
         
         
 
