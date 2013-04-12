@@ -75,7 +75,7 @@ def join(handler, crid):
     player = handler.player
     with db.Handler() as h:
         player.creature = h.refresh(player.creatures[crid])
-        raise NotImplementedError("join successful, but later is not implemented yet")
+        #raise NotImplementedError("join successful, but later is not implemented yet")
         if any( c == None for c in player.creature.coords):
             requests.ENTER(player, 1)
         logic.send_environment(player)
