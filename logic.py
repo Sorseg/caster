@@ -15,6 +15,8 @@ loc_requests = defaultdict(list)
 
 
 def locking(loc_id):
+    if not loc_id:
+        raise ValueError("No loc_id to lock")
     def wrapper(func):
         @EXECUTOR.submit
         def job():
@@ -41,15 +43,14 @@ def send_environment(player):
                        )
             env['cells'] = [c.info() for c in loc.cells.values()]
             env['objects'] = [o.info() for o in loc.objects.values()]
-            logging.info("Sending env")
             player.handler.send_json(env)
             
         
         
 
 def add_updater(loc_id):
-    upd = tornado.ioloop.PeriodicCallback(create_loc_updater(location.id), 1000*TIMEOUT, loop)
-    loc_updaters[location.id] = upd
+    upd = tornado.ioloop.PeriodicCallback(create_loc_updater(loc_id), 1000*TIMEOUT, loop)
+    loc_updaters[loc_id] = upd
     upd.start()
 
 def check_update(player):
