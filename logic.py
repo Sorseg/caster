@@ -43,7 +43,7 @@ def send_environment(player):
                        )
             env['cells'] = [c.info() for c in loc.cells.values()]
             env['objects'] = [o.info() for o in loc.objects.values()]
-            player.handler.send_json(env)
+            player.handler.write_message(env)
             
         
         
