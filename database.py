@@ -329,7 +329,7 @@ class Item(Object):
 class Location(Base):
     __tablename__ = 'locations'
     
-    current_turn = col(BigInteger, nullable = False, default = 0)
+    current_turn = col(BigInteger, nullable = False, default = 1)
 
     id = col(Integer, primary_key=True)
     name = col(String(50))
