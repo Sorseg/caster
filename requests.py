@@ -5,7 +5,7 @@ TODO: rewrite ALL
 import database as db
 import logging
 import commands as cmd
-from logic import locking, check_update
+import logic
 from collections import namedtuple
 
 # request functions to perform an action
@@ -16,7 +16,7 @@ def req(func):
     return func
 
 def create_request(**kw):
-    db.Location.requests[req['loc_id']].append(kw)
+    logic.loc_requests['loc_id'].append(kw)
 
 
 ########### SYSTEM REQUESTS: ###########
@@ -30,7 +30,7 @@ def ENTER(player, loc_id, x_y = (None,None)):
 
     player.loc_id = loc_id
 
-    @locking(loc_id = loc_id, can_cancel = False)
+    @logic.locking(loc_id = loc_id)
     def _():
         with db.Handler() as h:
             if x == None or y == None:
@@ -43,7 +43,7 @@ def ENTER(player, loc_id, x_y = (None,None)):
                            source = player.creature.id,
                            target_cell = targ_cell)
         player.committed = True
-        check_update(player)
+        logic.check_update(player)
 
 
 def EXIT(player):
@@ -58,7 +58,7 @@ def MOVE(player, info):
     if not player.in_game:
         return
     with db.Handler(True) as h:
-        @locking("move", loc_id = player.loc_id)
+        @logic.locking("move", loc_id = player.loc_id)
         def move(lock):
             cre = player.creature
             h.session.add(cre)
