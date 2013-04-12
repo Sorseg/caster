@@ -2,7 +2,26 @@
 <html>
 	<head>
 		<title>CASTER 0.0.0</title>
+		<script type="text/javascript" src="jquery-1.9.1.js">
+		</script>
+		<style type="text/css">
+			#main_table tr td{
+				border: solid 1px grey;
+			}
+			
+			body {
+				background-color: #333;
+			}
+			
+			input, textarea {
+				background-color: #555;
+				border: 1px;
+			}
+			
+		</style>
+		
 		<script>
+			var anim_length = 300;
 			var ws = new WebSocket('ws://'+document.location.host);
 			var populate = function(crtr){
 		         tabBody=document.getElementById("creatures");
@@ -34,10 +53,17 @@
 			ws.onmessage = function(message) {
 				document.getElementsByName('output')[0].value += message.data+'\n';
 				var obj = JSON.parse(message.data)
-				if (obj.what == "login"){
+				switch(obj.what){
+				
+				case "login":
+					$('#login_form').hide(anim_length);
 					for(var i = 0; i<obj.creatures.length; i++ ){
 						populate(obj.creatures[i]);
 					}
+					$('#creatures').show(anim_length);
+					break;
+				case "joined":
+					$('#creatures').hide(anim_length);
 				}
 			};
 			ws.onclose = function(){
@@ -45,7 +71,7 @@
 			}
 			function do_login(form)
 			{
-				f = document.getElementsByName('login_form')[0]
+				f = document.getElementById('login_form')
 				ws.send(JSON.stringify({what:"login", 
 				                        login:f.login.value,
 				                        passw:f.passw.value}))
@@ -53,28 +79,45 @@
 			}
 		</script>
 	</head>
+	
 	<body>
-		
-	<form name="login_form" method="post" onsubmit="return do_login(this);">
-		<table>
-			<tr>
-				<td><label for="login">Login</label></td>
-				<td><input type="text" name="login" value="demoth" id="login"/></td>
-			</tr>
-			<tr>
-				<td><label for="passw">Pass</label></td>
-				<td><input type="text" name="passw" value="asdf" id="passw"/></td>
-			</tr>
-			<tr><td><input type="submit" name="submit" value="Вход" id="submit" /></td></tr>
-		</table>
-	</form>
-	
-	<table id="creatures" style="border: solid 1px grey;">
-		<tr><th>ID</th><th>Class</th><th>Name</th><th>Use</th></tr>
+	<table id="main_table" width="100%">
+		<tr>
+			<td width="200px">
+				<form id="login_form" method="post" onsubmit="return do_login(this);">
+					<table>
+						<tr>
+							<td><label for="login">Login</label></td>
+							<td><input type="text" name="login" value="demoth" id="login"/></td>
+						</tr>
+						<tr>
+							<td><label for="passw">Pass</label></td>
+							<td><input type="text" name="passw" value="asdf" id="passw"/></td>
+						</tr>
+						<tr><td><input type="submit" name="submit" value="Вход" id="submit" /></td></tr>
+					</table>
+				</form>
+				
+				<table id="creatures" style="border: solid 1px grey; display:none;">
+					<tr><th>ID</th><th>Class</th><th>Name</th><th>Use</th></tr>
+				</table>
+			</td>
+			<td>
+				<div id="field">
+				</div>
+			</td>
+			<td width="200px">
+				<h3>Target:</h3>
+				<div id="target_description">
+					Nothing selected
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<textarea name="output" rows="15" cols="80"></textarea>
+			</td>
+		</tr>
 	</table>
-	
-	<textarea name="output" rows="15" cols="80">
-	</textarea>
-	
 	</body>
 </html>
