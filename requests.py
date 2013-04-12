@@ -53,7 +53,7 @@ def EXIT(player):
 ########### REQUESTS: ###########
 
 @req
-def MOVE(player, info):
+def MOVE(player, where):
     ''' Moves character in direction '''
     if not player.in_game:
         return
@@ -66,18 +66,18 @@ def MOVE(player, info):
                 player.send(cmd.error("You have not yet entered the game"))
                 return
 
-            if not info:
+            if not where:
                 player.send(cmd.error("No direction given for 'move'"))
                 return
 
-            if not set(info.lower()) <= set('nswe'):
-                player.send(cmd.error("unknown direction given: "+info))
+            if not set(where.lower()) <= set('nswe') or len(where) > 2:
+                player.send(cmd.error("unknown direction given: "+where))
                 return
             
             create_request(loc_id = player.loc_id,
                            type = "move",
                            source = player.creature.id,
-                           info = info)
+                           where = where)
 
 
 @req
