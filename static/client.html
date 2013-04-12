@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+		<!--TODO: Reconnect -->
 		<title>CASTER 0.0.0</title>
 		<script type="text/javascript" src="jquery-1.9.1.js">
 		</script>
@@ -16,6 +17,10 @@
 			input, textarea {
 				background-color: #555;
 				border: 1px;
+			}
+			
+			#field{
+				font-family: monospace;
 			}
 			
 		</style>
@@ -64,6 +69,25 @@
 					break;
 				case "joined":
 					$('#creatures').hide(anim_length);
+					break;
+				case "environment":
+					map = []
+					for (var i=0; i < obj.cells.length; i++){
+						cell = obj.cells[i];
+						var y = cell.coords[1]
+						var x = cell.coords[0]
+						if (typeof(map[y]) == "undefined"){
+							map[y] = [];
+						}
+						map[y][x] = (cell.type == "floor")? "." : "#";
+					}
+					var str = "";
+					for(var i=0; i< map.length; i++){
+						str += map[i].join("")+"<br>";
+					}
+					$("#field").html(str);
+					break;
+					
 				}
 			};
 			ws.onclose = function(){
