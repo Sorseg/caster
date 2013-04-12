@@ -21,7 +21,7 @@ from threading import RLock
 import logging
 
 
-engine = create_engine(DATABASE_CONNECTION, echo=True)
+engine = create_engine(DATABASE_CONNECTION) #echo = True
 Session = sessionmaker(bind=engine, expire_on_commit = False)
 
 
@@ -144,6 +144,16 @@ class Object(Base):
     @coords.setter
     def coords(self, coords):
         self.xpos, self.ypos = coords
+        
+    def info(self):
+        info = {
+                "type":self.type,
+                "id":self.id,
+                "size":self.size,
+                "coords":self.coords}
+        if hasattr(self, "model"):
+            info["model"] = self.model
+        return info
 
 
 class Creature(Object):
@@ -295,6 +305,10 @@ class Cell(Base):
 
     def __repr__(self):
         return "<Cell {} ({},{}):{}>".format(self.char, self.xpos, self.ypos, self.loc_id)
+    
+    def info(self):
+        return {"coords":self.coords,
+                "type":self.type}
 
 
 class Item(Object):
