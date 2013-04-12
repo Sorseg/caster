@@ -30,7 +30,7 @@ def do(handler, actions):
         for action in js:
             cmd = action.pop('what')
             if cmd.upper() not in commands:
-                handler.send_json(error("No such command:{} "
+                handler.write_message(error("No such command:{} "
             "please refer to "
             "https://code.google.com/p/caster/wiki/casterJsonProtocol"
             .format(cmd), actions = actions))
@@ -38,14 +38,14 @@ def do(handler, actions):
             commands[cmd.upper()](handler, **action)
     except Exception as e:
         logging.exception("omg")
-        handler.send_json(server_error(repr(e), actions = actions))
+        handler.write_message(server_error(repr(e), actions = actions))
         
 #COMMANDS:
 
 @cmd
 def login(handler, login, passw):
     player = handler.player 
-    send = handler.send_json
+    send = handler.write_message
     if player.login:
         send(error("Already logged in"))
         return
@@ -69,17 +69,15 @@ def login(handler, login, passw):
         send({"what":"login",
               "creatures":[c.short_info for c in creatures]})
 
-
 @cmd
 def join(handler, crid):
     player = handler.player
     with db.Handler() as h:
         player.creature = h.refresh(player.creatures[crid])
-        #raise NotImplementedError("join successful, but later is not implemented yet")
         if any( c == None for c in player.creature.coords):
             requests.ENTER(player, 1)
         logic.send_environment(player)
-            
+
 @cmd 
 def request(handler):
     pass
