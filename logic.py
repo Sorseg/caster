@@ -48,8 +48,11 @@ def send_environment(player):
         
         
 
-def add_updater(loc_id):
-    upd = tornado.ioloop.PeriodicCallback(create_loc_updater(loc_id), 1000*TIMEOUT, loop)
+def add_updater(loc_id, loop = None):
+    args = [create_loc_updater(loc_id), 1000*TIMEOUT]
+    if loop:
+        args.append(loop)
+    upd = tornado.ioloop.PeriodicCallback(*args)
     loc_updaters[loc_id] = upd
     upd.start()
 
@@ -63,7 +66,7 @@ def create_loc_updater(id):
     def updater():
         @locking(id)
         def _():
-            with db.handler() as h:
+            with db.Handler() as h:
                 logging.info("updating", id)
                 l = h.query(db.Location).get(id)
                 logging.info("Turn #{}".format(l.current_turn))
@@ -77,7 +80,7 @@ def init(loop):
     with db.Handler() as h:
         for location in h.session.query(db.Location):
             if location.creatures:
-                add_updater(location.id)
+                add_updater(location.id, loop)
 
 
                 
