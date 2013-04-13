@@ -64,8 +64,8 @@ def create_loc_updater(id):
         @locking(id)
         def _():
             with db.Handler() as h:
-                logging.info("updating {}".format(id))
-                l = h.query(db.Location).get(id)
+                logging.info("updating location #{}".format(id))
+                l = h.session.query(db.Location).get(id)
                 logging.info("Turn #{}".format(l.current_turn))
                 for r in loc_requests[id]:
                     logging.debug("Processing {!s}".format(r))
