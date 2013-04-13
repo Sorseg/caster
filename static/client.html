@@ -26,7 +26,7 @@
 		</style>
 		
 		<script>
-			var anim_length = 300;
+			var anim_length = 200;
 			var ws = new WebSocket('ws://'+document.location.host);
 			var populate = function(crtr){
 		         tabBody=document.getElementById("creatures");
@@ -62,9 +62,7 @@
 				
 				case "login":
 					$('#login_form').hide(anim_length);
-					for(var i = 0; i<obj.creatures.length; i++ ){
-						populate(obj.creatures[i]);
-					}
+					obj.creatures.map(populate);
 					$('#creatures').show(anim_length);
 					break;
 				case "joined":
@@ -83,6 +81,11 @@
 					}
 					var str = "";
 					for(var i=0; i< map.length; i++){
+						for (var j = 0; j< map[i].length; j++){
+							if (typeof(map[i][j]) == 'undefined'){
+								map[i][j] = '*';
+							}
+						}
 						str += map[i].join("")+"<br>";
 					}
 					$("#field").html(str);
