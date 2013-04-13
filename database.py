@@ -387,14 +387,18 @@ class Weapon(Item):
 
 
 def destroy():
+    import os 
+    os.remove(DATABASE_FILE_NAME)
+    '''
     session = Session()
     session.execute("drop database if exists caster;")
     session.execute("create database caster;")
     session.commit()
+    '''
 
 def create():
     session = Session()
-    session.execute("use caster;")
+    #session.execute("use caster;")
     Base.metadata.create_all(engine)
     import create_data
     create_data.create(session)

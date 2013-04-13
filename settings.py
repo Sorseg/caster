@@ -14,4 +14,5 @@ TURN_TIMEOUT = 20
 #####  MISC:  #############
 
 #DATABASE_CONNECTION = 'mysql+mysqlconnector://caster:sejf3sjdijoR5EVIOJ@localhost/caster'
-DATABASE_CONNECTION = 'sqlite:///db.db'
+DATABASE_FILE_NAME = 'db.db'
+DATABASE_CONNECTION = 'sqlite:///'+DATABASE_FILE_NAME
