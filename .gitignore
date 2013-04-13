@@ -6,3 +6,4 @@ test_shell.py
 __pycache__
 *~
 *.pyc
+db.db
