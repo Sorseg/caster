@@ -45,9 +45,6 @@ def send_environment(player):
             env['objects'] = [o.info() for o in loc.objects.values()]
             player.handler.write_message(env)
             
-        
-        
-
 def add_updater(loc_id, loop = None):
     args = [create_loc_updater(loc_id), 1000*TIMEOUT]
     if loop:
@@ -67,7 +64,7 @@ def create_loc_updater(id):
         @locking(id)
         def _():
             with db.Handler() as h:
-                logging.info("updating", id)
+                logging.info("updating {}".format(id))
                 l = h.query(db.Location).get(id)
                 logging.info("Turn #{}".format(l.current_turn))
                 for r in loc_requests[id]:
