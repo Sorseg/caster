@@ -388,7 +388,9 @@ class Weapon(Item):
 
 def destroy():
     import os 
-    os.remove(DATABASE_FILE_NAME)
+    try:
+        os.remove(DATABASE_FILE_NAME)
+    except: pass
     '''
     session = Session()
     session.execute("drop database if exists caster;")
@@ -398,7 +400,6 @@ def destroy():
 
 def create():
     session = Session()
-    #session.execute("use caster;")
     Base.metadata.create_all(engine)
     import create_data
     create_data.create(session)
