@@ -13,6 +13,7 @@ MAX_TIME = 100
 loc_locks = defaultdict(RLock)
 loc_updaters = {}
 loc_requests = defaultdict(list)
+loc_responses = defaultdict(list)
 
 logic_functions = {}
 
@@ -70,7 +71,7 @@ def create_response(request, status):
     for k in ['type', 'source', 'target', 'target_cell', 'time', 'duration']:
         if k in request:
             response[k] = request[k]
-    return response
+    loc_responses[r['loc_id']].append(response)
     
 def create_loc_updater(id):
     def updater():
@@ -79,20 +80,23 @@ def create_loc_updater(id):
             logging.debug("Updating location #{}".format(id))
             requests = loc_requests.pop(id, [])
             
-            
             logging.debug("Sorting requests by time")
-            current_times = defaultdict(float)
+            current_times = defaultdict(int)
             for r in requests:
                 s = r['source']
-                if current_times[s.id] + r['duration'] > MAX_TIME:
-                    return create_response(r, "fail")
+                new_time = current_times[s.id] + r['duration']
+                
+                if new_time > MAX_TIME:
+                    create_response(r, "fail")
                 r['time'] = current_times[s.id]
                 current_times[s.id] += r['duration']
-            
+                
+            requests = sorted(requests, key = lambda r: r['time'])
+            #TODO: implement simultaneous actions
             for r in requests:
                 t = r.pop('type')
                 try:
-                    responses += logic_functions[t](**r)
+                    logic_functions[t](r)
                 except:
                     logging.exception("Error in logic function")
                     
@@ -113,9 +117,9 @@ def init(loop):
 ######################### LOGIC ROUTINES ######################
 
 @logic
-def enter(loc_id, source, target_cell):
+def enter(request):
+    logging.debug("ENTERING...")
     with db.Handler() as h:
-        l = h.get_location(loc_id)
-    return []
+        l = h.get_location(request['loc_id'])
 
                 
