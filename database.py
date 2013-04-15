@@ -56,6 +56,9 @@ class Handler(object):
 
     def __del__(self):
         self.session.close()
+        
+    def get_location(self, id):
+        return self.session.query(Location).get(id)
 
 
 class NonDbData(object):

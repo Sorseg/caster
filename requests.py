@@ -16,7 +16,7 @@ def req(func):
     return func
 
 def create_request(**kw):
-    logic.loc_requests['loc_id'].append(kw)
+    logic.loc_requests[kw['loc_id']].append(kw)
 
 
 ########### SYSTEM REQUESTS: ###########
@@ -40,8 +40,9 @@ def ENTER(player, loc_id, x_y = (None,None)):
 
             create_request(loc_id = loc_id,
                            type = 'enter',
-                           source = player.creature.id,
-                           target_cell = targ_cell)
+                           source = player.creature,
+                           target_cell = targ_cell,
+                           duration = 50)
         player.committed = True
         logic.check_update(player)
 

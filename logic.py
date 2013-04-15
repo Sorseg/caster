@@ -8,10 +8,17 @@ import logging
 
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
 TIMEOUT = 15
+MAX_TIME = 100
 
 loc_locks = defaultdict(RLock)
 loc_updaters = {}
 loc_requests = defaultdict(list)
+
+logic_functions = {}
+
+def logic(func):
+    logic_functions[func.__name__.lower()] = func
+    return func
 
 
 def locking(loc_id):
@@ -34,8 +41,6 @@ def send_environment(player):
     @locking(id)
     def _():
         with db.Handler() as h:
-            logging.info("ID OF LOCATION: {!s}".format(id))
-            
             loc = h.session.query(db.Location).get(id)
             env = dict(what = "environment",
                        location = id,
@@ -58,17 +63,42 @@ def check_update(player):
     '''
     if player.loc_id not in loc_updaters:
         add_updater(player.loc_id)
+        
+def create_response(request, status):
+    response = {"what":"response",
+                "result":status}
+    for k in ['type', 'source', 'target', 'target_cell', 'time', 'duration']:
+        if k in request:
+            response[k] = request[k]
+    return response
     
 def create_loc_updater(id):
     def updater():
         @locking(id)
         def _():
+            logging.debug("Updating location #{}".format(id))
+            requests = loc_requests.pop(id, [])
+            
+            
+            logging.debug("Sorting requests by time")
+            current_times = defaultdict(float)
+            for r in requests:
+                s = r['source']
+                if current_times[s.id] + r['duration'] > MAX_TIME:
+                    return create_response(r, "fail")
+                r['time'] = current_times[s.id]
+                current_times[s.id] += r['duration']
+            
+            for r in requests:
+                t = r.pop('type')
+                try:
+                    responses += logic_functions[t](**r)
+                except:
+                    logging.exception("Error in logic function")
+                    
+                logging.debug("Processing {!s}".format(r))
             with db.Handler() as h:
-                logging.info("updating location #{}".format(id))
-                l = h.session.query(db.Location).get(id)
-                logging.info("Turn #{}".format(l.current_turn))
-                for r in loc_requests[id]:
-                    logging.debug("Processing {!s}".format(r))
+                l = h.get_location(id)
                 l.current_turn += 1
             
     return updater
@@ -79,5 +109,13 @@ def init(loop):
             if location.creatures:
                 add_updater(location.id, loop)
 
+
+######################### LOGIC ROUTINES ######################
+
+@logic
+def enter(loc_id, source, target_cell):
+    with db.Handler() as h:
+        l = h.get_location(loc_id)
+    return []
 
                 
