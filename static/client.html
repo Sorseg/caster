@@ -29,8 +29,8 @@
 				cursor: default;
 			}
 			
-			#field td:hover{
-				background-color: #666;
+			#field td.floor:hover{
+				background-color: #464;
 			}
 			
 		</style>
@@ -89,7 +89,7 @@
 						if (typeof(map[y]) == "undefined"){
 							map[y] = [];
 						}
-						map[y][x] = (cell.type == "floor")? "." : "#";
+						map[y][x] = cell.type;
 					}
 					var str = "";
 					for(var i=0; i< map.length; i++){
@@ -98,7 +98,9 @@
 							if (typeof(map[i][j]) == 'undefined'){
 								map[i][j] = '*';
 							}
-							str += '<td xpos="'+j+'" ypos="'+i+'">'+map[i][j]+'</td>'
+							str += ('<td xpos="'+j+'" ypos="'+i+'" class="' + map[i][j] +'">'+
+							           ((map[i][j] == 'floor')?'.':'#')+
+							           '</td>');
 						}
 						str += "</tr>\n";
 					}
