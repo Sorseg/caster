@@ -6,8 +6,8 @@
 		<script type="text/javascript" src="jquery-1.9.1.js">
 		</script>
 		<style type="text/css">
-			#main_table tr td{
-				border: solid 1px grey;
+			#main_table td{
+				border: solid 1px #444;
 			}
 			
 			body {
@@ -21,6 +21,16 @@
 			
 			#field{
 				font-family: monospace;
+				border-width: 0px;
+				border-collapse: collapse;
+				-webkit-user-select: none; /* Chrome/Safari */        
+				-moz-user-select: none; /* Firefox */
+				-ms-user-select: none; /* IE10+ */
+				cursor: default;
+			}
+			
+			#field td:hover{
+				background-color: #666;
 			}
 			
 		</style>
@@ -65,9 +75,11 @@
 					obj.creatures.map(populate);
 					$('#creatures').show(anim_length);
 					break;
+					
 				case "joined":
 					$('#creatures').hide(anim_length);
 					break;
+					
 				case "environment":
 					map = []
 					for (var i=0; i < obj.cells.length; i++){
@@ -81,12 +93,14 @@
 					}
 					var str = "";
 					for(var i=0; i< map.length; i++){
+						str += "<tr>";
 						for (var j = 0; j< map[i].length; j++){
 							if (typeof(map[i][j]) == 'undefined'){
 								map[i][j] = '*';
 							}
+							str += '<td xpos="'+j+'" ypos="'+i+'">'+map[i][j]+'</td>'
 						}
-						str += map[i].join("")+"<br>";
+						str += "</tr>\n";
 					}
 					$("#field").html(str);
 					break;
@@ -104,6 +118,14 @@
 				                        passw:f.passw.value}))
 				return false;
 			}
+			
+			$(function(){
+				$('body').on('click','#field td', function(e){
+					xpos = e.toElement.getAttribute('xpos')
+					ypos = e.toElement.getAttribute('ypos')
+					//alert(xpos+", "+ypos);
+				});
+			});
 		</script>
 	</head>
 	
@@ -130,8 +152,8 @@
 				</table>
 			</td>
 			<td>
-				<div id="field">
-				</div>
+				<table id="field">
+				</table>
 			</td>
 			<td width="200px">
 				<h3>Target:</h3>
