@@ -68,8 +68,8 @@ class NonDbData(object):
 
     def __set__(self, obj, value):
         if not obj.id:
-            logging.error("Assigning to object without id")
-            return
+            raise ValueError("Assigning to object without id")
+        
         self.dict[obj.id] = value
 
 
