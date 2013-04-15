@@ -77,4 +77,5 @@ if __name__ == "__main__":
     server = SocketServer()
     server.bind(8889)
     server.start()
+    logging.info("Server started")
     loop.start()
