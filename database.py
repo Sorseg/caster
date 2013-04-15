@@ -281,7 +281,6 @@ class Cell(Base):
     xpos = col(Integer)
     ypos = col(Integer)
     loc_id = col(Integer, ForeignKey("locations.id"))
-    char = col(CHAR(1))
     _type = col(Integer)
     
     @property
