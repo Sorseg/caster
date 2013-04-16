@@ -18,6 +18,9 @@ loc_responses = defaultdict(list)
 logic_functions = {}
 
 def logic(func):
+    ''' Registers function as action,
+    which can be performed with request
+    '''
     logic_functions[func.__name__.lower()] = func
     return func
 
@@ -65,12 +68,13 @@ def check_update(player):
     if player.loc_id not in loc_updaters:
         add_updater(player.loc_id)
         
-def create_response(request, status):
+def create_response(request, success = True, **kw):
     response = {"what":"response",
-                "result":status}
+                "result":"success" if success else "fail"}
     for k in ['type', 'source', 'target', 'target_cell', 'time', 'duration']:
         if k in request:
             response[k] = request[k]
+    response.update(kw)
     loc_responses[r['loc_id']].append(response)
     
 def create_loc_updater(id):
@@ -87,7 +91,7 @@ def create_loc_updater(id):
                 new_time = current_times[s.id] + r['duration']
                 
                 if new_time > MAX_TIME:
-                    create_response(r, "fail")
+                    create_response(r, success = False)
                 r['time'] = current_times[s.id]
                 current_times[s.id] += r['duration']
                 
@@ -121,5 +125,13 @@ def enter(request):
     logging.debug("ENTERING...")
     with db.Handler() as h:
         l = h.get_location(request['loc_id'])
+        s = h.refresh(request['source'])
+        for cell in l.cells:
+            space = s.space()
+            if space.fits(cell, l):
+                s.coords = cell
+                s.loc_id = l.id
+                create_response(request, target_cell = cell)
+        
 
                 
