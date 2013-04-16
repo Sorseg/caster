@@ -19,10 +19,43 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import UniqueConstraint
 from threading import RLock
 import logging
+from itertools import chain
 
 
 engine = create_engine(DATABASE_CONNECTION) #echo = True
 Session = sessionmaker(bind=engine, expire_on_commit = False)
+
+circle_approx = [
+                  (),
+                  
+                  ('#'),
+                  
+                  ('##',
+                   '##'),
+                          
+                  ('###',
+                   '###',
+                   '###'),
+                          
+                  (' ## ',
+                   '####',
+                   '####',
+                   ' ## '),
+                  
+                  (' ### ',
+                   '#####',
+                   '#####',
+                   '#####',
+                   ' ### ')
+                ]
+
+
+# list of coordinate approximations for large objects
+approx_maps = [
+              {(x,y) for y, line in enumerate(approx)
+                     for x, c in enumerate(line) if c =='#'}
+              for approx in circle_approx
+              ]
 
 
 class Handler(object):
@@ -84,42 +117,31 @@ class Coord(tuple):
     def __str__(self):
         return "{},{}".format(*self)
 
-    def dist(x1_y1,x2_y2): #@NoSelf
+    def dist(c1,c2): #@NoSelf
+        x1, y1 = c1
+        x2, y2 = c2
         return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 
 class Space(object):
-    circle_approx = [
-                      (),
-                      ('#'),
-                      
-                      ('##',
-                       '##'),
-                              
-                      ('###',
-                       '###',
-                       '###'),
-                              
-                      (' ## ',
-                       '####',
-                       '####',
-                       ' ## '),
-                      
-                      (' ### ',
-                       '#####',
-                       '#####',
-                       '#####',
-                       ' ### ',
-                      )
-                              ]
     
     def __init__(self, coord, size):
         self.coord = coord
         self.size = size
         
-    def fits(self, new_pos, cells):
-        #TODO
-        pass
+    def fits(self, new_pos, location):
+        
+        floor = {coordinate for coordinate, cell in location.cells.items() if cell.type != 'wall' }
+        occupied = set.union(*[cr.space().cells() for cr in location.creatures])
+        new_cells = self.cells(new_pos)
+        return (new_cells <= floor) and not (new_cells & occupied)
+    
+    def cells(self, pos = None):
+        if not pos:
+            pos = self.coord
+        return {Coord(pos)+c for c in approx_maps[self.size]}
+    
+        
 
 
 ############### MAPPING ##############
@@ -157,6 +179,9 @@ class Object(Base):
         if hasattr(self, "model"):
             info["model"] = self.model
         return info
+    
+    def space(self):
+        return Space(self.coords, self.size)
 
 
 class Creature(Object):
@@ -169,6 +194,7 @@ class Creature(Object):
                                                   " not "+str(type(template)))
             
         self.template = template
+        self.size = template.size
 
     __mapper_args__ = {'polymorphic_identity': 'creature'}
         
@@ -345,22 +371,13 @@ class Location(Base):
     
     objects = relationship(Object, collection_class=attribute_mapped_collection("coords"))
     
-    #TODO: optmimze
     @property
     def items(self):
-        items = defaultdict(list)
-        for o in self.objects.values():
-            if isinstance(o, Item):
-                items[o.coords].append(o)
-        return items
+        return [o for o in self.objects.values() if isinstance(o, Item)]
     
     @property
     def creatures(self):
-        items = defaultdict(list)
-        for o in self.objects.values():
-            if isinstance(o, Creature):
-                items[o.coords].append(o)
-        return items
+        return [o for o in self.objects.values() if isinstance(o, Creature)]
 
     def __str__(self):
         return self.name
