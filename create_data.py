@@ -3,7 +3,7 @@ from database import *
 def create(session):
     #populate tables:
     if not session.query(User).filter_by(login ='sors').count():
-        d = CrTemplate(cls='drakonian', model='drak1')
+        d = CrTemplate(cls='drakonian', model='drak1', size = 3)
         sors = User(login='sors', pwd ='asdf2')
         drak = Creature(d)
         drak.char = '@'
@@ -13,7 +13,7 @@ def create(session):
         
     if not session.query(User).filter_by(login = 'demoth').count():
         demoth = User(login='demoth', pwd = 'asdf')
-        k = CrTemplate(cls='kob', model='kob1')
+        k = CrTemplate(cls='kob', model='kob1', size = 2)
         kob = Creature(k)
         mer = Creature(k)
         kob.name = "Kamui"
