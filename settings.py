@@ -1,15 +1,15 @@
 
 ######  SERVER SETTINGS:  ###########
 
-LOG_TO_CONSOLE = True
-LOG_DIR = 'log/caster.log'
-LISTEN_PORT = 8887
+LISTEN_PORT = 8888
+TCP_LISTEN_PORT = 8889
+import logging
+logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 
 
 ######  GAME SETTINGS:  #############
 
 TURN_TIMEOUT = 20
-
 
 #####  MISC:  #############
 

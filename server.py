@@ -3,6 +3,7 @@
 TODO:
 - connection timeout
 '''
+from settings import *
 import json
 import logging
 import sys
@@ -13,7 +14,6 @@ import tornado.websocket
 import commands
 import logic
 from tornado.tcpserver import TCPServer
-logging.basicConfig(filename='caster.log', level=logging.DEBUG)
 
 class Player:
     players = {}
@@ -71,11 +71,11 @@ application = tornado.web.Application([
     debug=True)
 
 if __name__ == "__main__":
-    application.listen(8888)
+    application.listen(LISTEN_PORT)
     loop = tornado.ioloop.IOLoop.instance()
     logic.init(loop)
     server = SocketServer()
-    server.bind(8889)
+    server.bind(TCP_LISTEN_PORT)
     server.start()
     logging.info("Server started")
     loop.start()
