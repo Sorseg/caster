@@ -4,7 +4,10 @@
 LISTEN_PORT = 8888
 TCP_LISTEN_PORT = 8889
 import logging
-logging.basicConfig(filename='caster.log', level=logging.DEBUG)
+logging.basicConfig(filename = 'caster.log',
+                    level = logging.DEBUG,
+                    format = '%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+                    datefmt = '%y-%m-%d:%H:%M:%S')
 
 
 ######  GAME SETTINGS:  #############
