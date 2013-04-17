@@ -132,7 +132,9 @@ class Space(object):
     def fits(self, new_pos, location):
         
         floor = {coordinate for coordinate, cell in location.cells.items() if cell.type != 'wall' }
-        occupied = set.union(*[cr.space().cells() for cr in location.creatures])
+        occupied = set()
+        if location.creatures:
+            occupied.update(*[cr.space().cells() for cr in location.creatures])
         new_cells = self.cells(new_pos)
         return (new_cells <= floor) and not (new_cells & occupied)
     
@@ -221,12 +223,15 @@ class Creature(Object):
         #   return self.equipped.damage
         return 1
     
-    @property
-    def short_info(self):
-        return {"model":self.model,
-                "id":self.id,
-                "name":self.name,
-                "cls":self.cls}
+    def info(self):
+        i = super().info()
+        i .update({"model": self.model,
+                "id":    self.id,
+                "name":  self.name,
+                "cls":   self.cls,
+                "user":  self.user_login})
+        return i
+        
     
     def __str__(self):
         return "({}){}:{}".format(self.id, self.user_login, self.name)

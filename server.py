@@ -4,54 +4,48 @@ TODO:
 - connection timeout
 '''
 from settings import *
+from tornado.tcpserver import TCPServer
+import commands
 import json
 import logging
+import logic
 import sys
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
+from operator import attrgetter
 
-import commands
-import logic
-from tornado.tcpserver import TCPServer
-
-class Player:
-    players = {}
-    
-    def __init__(self, handler):
-        self.handler = handler
-        self.login = None
-    
-    def joined(self):
-        if self.creature:
-            return True
-        return False
-    
+json_default = attrgetter('id')
 
 class MainHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        self.player = Player(self)
+        self.player = logic.Player(self)
 
     def on_message(self, message):
         logging.debug("Message: "+message)
         commands.do(self, message)
 
     def on_close(self):
-        Player.players.pop(self.player.login, None)
+        logic.Player.players.pop(self.player.login, None)
+        
+    def write_message(self, msg):
+        if isinstance(msg, dict):
+            msg = json.dumps(msg, default = json_default)
+        return super().write_message(msg)
 
 
 class SocketServer(TCPServer):
     
     def handle_stream(self, stream, addr):
         logging.info("Connection from {!r}".format(addr))
-        stream.player = Player(stream)
+        stream.player = logic.Player(stream)
         
         def write_message(msg):
-            stream.write(bytes(json.dumps(msg),'utf8')+b'\n')    
+            stream.write(bytes(json.dumps(msg, default = json_default), 'utf8') + b'\n')    
         stream.write_message = write_message
         
         def on_close():
-            Player.players.pop(stream.player.login, None)
+            logic.Player.players.pop(stream.player.login, None)
         stream.set_close_callback(on_close)
         
         def on_message( msg = None):

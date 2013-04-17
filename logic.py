@@ -17,6 +17,25 @@ loc_responses = defaultdict(list)
 
 logic_functions = {}
 
+
+class Player:
+    players = {}
+    
+    def __init__(self, handler):
+        self.handler = handler
+        self.login = None
+        self.loc_id = -1
+    
+    def joined(self):
+        if self.creature:
+            return True
+        return False
+    
+    @classmethod
+    def get_players(cls, loc_id):
+        return [p for p in cls.players.values() if p.loc_id == loc_id]
+
+
 def logic(func):
     ''' Registers function as action,
     which can be performed with request
@@ -75,7 +94,7 @@ def create_response(request, success = True, **kw):
         if k in request:
             response[k] = request[k]
     response.update(kw)
-    loc_responses[r['loc_id']].append(response)
+    loc_responses[request['loc_id']].append(response)
     
 def create_loc_updater(id):
     def updater():
@@ -84,7 +103,6 @@ def create_loc_updater(id):
             logging.debug("Updating location #{}".format(id))
             requests = loc_requests.pop(id, [])
             
-            logging.debug("Sorting requests by time")
             current_times = defaultdict(int)
             for r in requests:
                 s = r['source']
@@ -98,16 +116,19 @@ def create_loc_updater(id):
             requests = sorted(requests, key = lambda r: r['time'])
             #TODO: implement simultaneous actions
             for r in requests:
-                t = r.pop('type')
                 try:
-                    logic_functions[t](r)
+                    logic_functions[r['type']](r)
                 except:
                     logging.exception("Error in logic function")
-                    
                 logging.debug("Processing {!s}".format(r))
             with db.Handler() as h:
                 l = h.get_location(id)
+                responses = loc_responses.pop(id ,[])
+                resp_json = {"what":"responses", "responses" : responses, "turn":l.current_turn}
                 l.current_turn += 1
+                logging.info("Planning turn #{}".format(l.current_turn))
+            for p in Player.get_players(id):
+                p.handler.write_message(resp_json)
             
     return updater
     
@@ -132,6 +153,10 @@ def enter(request):
                 s.coords = cell
                 s.loc_id = l.id
                 create_response(request, target_cell = cell)
+                break
+        else:
+            create_response(request, success = False)
+            #TODO: Tell user and try again
         
 
                 

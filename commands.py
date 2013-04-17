@@ -49,7 +49,8 @@ def login(handler, login, passw):
     if player.login:
         send(error("Already logged in"))
         return
-    
+    #TODO: If one of the creatures has entered domain
+    #it should automaticaly be chosen
     with db.Handler() as h:
         creatures = h.login(login, passw)
         if creatures == None:
@@ -67,15 +68,17 @@ def login(handler, login, passw):
         player.creatures = {c.id:c for c in creatures}
         
         send({"what":"login",
-              "creatures":[c.short_info for c in creatures]})
+              "creatures":[c.info() for c in creatures]})
 
 @cmd
 def join(handler, crid):
     player = handler.player
     with db.Handler() as h:
         player.creature = h.refresh(player.creatures[crid])
-        if any( c == None for c in player.creature.coords):
+        if any(c == None for c in player.creature.coords) or not player.creature.loc_id:
             requests.ENTER(player, 1)
+        else:
+            player.loc_id = player.creature.loc_id
         handler.write_message({"what":"joined"})
         logic.send_environment(player)
 
