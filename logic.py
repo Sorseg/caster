@@ -82,8 +82,7 @@ def add_updater(loc_id, loop = None):
     upd.start()
 
 def check_update(player):
-    '''TODO: Add updater as soon as player enters location
-    '''
+    #TODO: invoke turn update if all committed
     if player.loc_id not in loc_updaters:
         add_updater(player.loc_id)
         
