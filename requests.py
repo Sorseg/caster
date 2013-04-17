@@ -16,6 +16,7 @@ def req(func):
     return func
 
 def create_request(**kw):
+    #TODO: Make it impossible to change loc_id after assignment
     logic.loc_requests[kw['loc_id']].append(kw)
 
 
