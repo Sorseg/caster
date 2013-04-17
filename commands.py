@@ -79,7 +79,7 @@ def join(handler, crid):
             requests.ENTER(player, 1)
         else:
             player.loc_id = player.creature.loc_id
-        handler.write_message({"what":"joined"})
+        handler.write_message({"what":"joined", "crid":crid})
         logic.send_environment(player)
 
 @cmd 
