@@ -54,7 +54,7 @@ class Player:
     def __init__(self, handler):
         self.handler = handler
         self.login = None
-        self.loc_id = -1
+        self.loc_id = None
     
     def joined(self):
         if self.creature:
@@ -82,16 +82,16 @@ def locking(loc_id):
     def wrapper(func):
         @EXECUTOR.submit
         def job():
-            with loc_containers[loc_id].lock:
-                try:
+            try:
+                with loc_containers[loc_id].lock:
                     func()
-                except:
-                    logging.exception("Error in locking function")
+            except:
+                logging.exception("Error in locking function")
     return wrapper
 
 
 def send_environment(player):
-    #TODO: something if location of creature changes
+    #TODO: something if location of creature changes (global lock?)
     id = player.creature.loc_id or player.loc_id
     @locking(id)
     def _():
@@ -115,7 +115,7 @@ def add_updater(loc_id, loop = None):
 
 def check_update(player):
     #TODO: invoke turn update if all committed
-    if player.loc_id not in loc_containers:
+    if not loc_containers[player.loc_id].updater:
         add_updater(player.loc_id)
         
 def create_response(request, success = True, **kw):
@@ -124,15 +124,18 @@ def create_response(request, success = True, **kw):
     for k in ['type', 'source', 'target', 'target_cell', 'time', 'duration']:
         if k in request:
             response[k] = request[k]
+    if request['type'] == 'enter':
+        loc_containers[request['loc_id']].new_objs.append(request['source'])
     response.update(kw)
-    loc_responses[request['loc_id']].append(response)
+    loc_containers[request['loc_id']].requests.append(response)
     
 def create_loc_updater(id):
     def updater():
         @locking(id)
         def _():
             logging.debug("Updating location #{}".format(id))
-            requests = loc_requests.pop(id, [])
+            requests = loc_containers[id].requests
+            loc_containers[id].requests = []
             
             current_times = defaultdict(int)
             for r in requests:
@@ -154,8 +157,18 @@ def create_loc_updater(id):
                 logging.debug("Processing {!s}".format(r))
             with db.Handler() as h:
                 l = h.get_location(id)
-                responses = loc_responses.pop(id ,[])
-                resp_json = {"what":"responses", "responses" : responses, "turn":l.current_turn}
+                responses = loc_containers[id].responses
+                loc_containers[id].responses = []
+                new_objs = []
+                resp_json = {"what":"responses",
+                             "responses" : responses,
+                             "turn":l.current_turn}
+                
+                for obj in loc_containers[id].new_objs:
+                    o = h.refresh(obj)
+                    new_objs.append(o.info())
+                loc_containers[id].new_objs = []
+                resp_json['new_objects'] = new_objs
                 l.current_turn += 1
                 logging.info("Planning turn #{}".format(l.current_turn))
             for p in Player.get_players(id):
@@ -183,7 +196,6 @@ def enter(request):
                 s.coords = cell
                 s.loc_id = l.id
                 create_response(request, target_cell = cell)
-                
                 break
         else:
             create_response(request, success = False)

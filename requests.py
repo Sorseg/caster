@@ -17,7 +17,7 @@ def req(func):
 
 def create_request(**kw):
     #TODO: Make it impossible to change loc_id after assignment
-    logic.loc_requests[kw['loc_id']].append(kw)
+    logic.loc_containers[kw['loc_id']].requests.append(kw)
 
 
 ########### SYSTEM REQUESTS: ###########
@@ -33,17 +33,19 @@ def ENTER(player, loc_id, x_y = (None,None)):
 
     @logic.locking(loc_id = loc_id)
     def _():
+        logging.debug("trying to enter")
         with db.Handler() as h:
             if x == None or y == None:
                 targ_cell = None
             else:
                 raise NotImplementedError
-
+            
             create_request(loc_id = loc_id,
                            type = 'enter',
                            source = player.creature,
                            target_cell = targ_cell,
                            duration = 50)
+        logging.debug("Checking update")
         player.committed = True
         logic.check_update(player)
 
