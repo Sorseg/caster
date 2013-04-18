@@ -29,27 +29,56 @@
 				cursor: default;
 			}
 			
-			#field td.floor:hover{
-				background-color: #464;
+			#field td.object{
+				background-color: #666;
 			}
+			
+			#field td.object_selected{
+				background-color: #33f;
+			}
+			
+			#field td.object_hovered{
+				background-color: #3f3;
+			}
+			
+			#field td.object_hovered.object_selected{
+				background-color: #6ff;
+			}
+			
+			#field td.my_cr{
+				background-color: #633;
+			}
+			
+			
 			
 		</style>
 		
 		<script>
-			var approx_map = [
-				{},
-				{'0:0': 1}, {'0:0': 1, '0:1': 1, '1:1': 1, '1:0': 1},
-				{'0:2': 1, '2:1': 1, '0:0': 1, '0:1': 1, '2:0': 1, '1:2': 1, '1:1': 1, '1:0': 1, '2:2': 1},
-				{'2:0': 1, '2:1': 1, '2:2': 1, '2:3': 1, '0:2': 1, '0:1': 1, '1:3': 1, '1:2': 1, '1:1': 1, '1:0': 1, '3:1': 1, '3:2': 1},
-				{'2:0': 1, '2:1': 1, '2:2': 1, '2:3': 1, '2:4': 1, '4:3': 1, '4:1': 1, '0:2': 1, '0:3': 1, '1:1': 1, '0:1': 1, '1:3': 1, '1:2': 1, '1:4': 1, '1:0': 1, '3:4': 1, '4:2': 1, '3:1': 1, '3:0': 1, '3:3': 1, '3:2': 1}
-				]
-			var objects_map = {}
+			var approx_maps = [
+				[],
+				[[0, 0]],
+				[[0, 0], [0, 1], [1, 0], [1, 1]],
+				[[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]],
+				[[0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2]],
+				[[0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [4, 1], [4, 2], [4, 3]]]
+
 			
 			var anim_length = 200;
 			var ws = new WebSocket('ws://'+document.location.host);
-			var login;
+			var joined_crid;
 			var game_state;
+			var objects = {};
 			var creatures;
+			var zero_pad = "0000";
+			
+			function pad_with_zeroes(coord){
+				return (zero_pad+coord).slice(-zero_pad.length)
+			}
+			
+			function make_str_coord(coord){
+				return pad_with_zeroes(coord[0])+":"+pad_with_zeroes(coord[1])
+			}
+			
 			var populate = function(crtr){
 		         tabBody=document.getElementById("creatures");
 		         row=document.createElement("TR");
@@ -96,38 +125,74 @@
 					$('#creatures').hide(anim_length);
 					$('#cr_info').show(anim_length);
 					$('#cr_name').html(creatures[obj.crid].name);
+					joined_crid = obj.crid;
 					break;
 					
 				case "environment":
-					map = []
-					for (var i=0; i < obj.cells.length; i++){
-						cell = obj.cells[i];
-						var y = cell.coords[1]
-						var x = cell.coords[0]
-						if (typeof(map[y]) == "undefined"){
-							map[y] = [];
-						}
-						map[y][x] = cell.type;
-					}
-					var str = "";
-					for(var i=0; i< map.length; i++){
-						str += "<tr>";
-						for (var j = 0; j< map[i].length; j++){
-							if (typeof(map[i][j]) == 'undefined'){
-								map[i][j] = '*';
-							}
-							str += ('<td xpos="'+j+'" ypos="'+i+'" class="' + map[i][j] +'">'+
-							           ((map[i][j] == 'floor')?'.':'#')+
-							           '</td>');
-						}
-						str += "</tr>\n";
-					}
+					map = {};
+					object_map = {};
+					coords = [];
+					
+					obj.cells.map(function(cell){
+						
+						text_coords = make_str_coord(cell.coords);
+						coords.push(text_coords)
+						map[text_coords] = cell;
+					});
+					coords.sort();
+					
+					mincoord = coords[0].split(':');
+					map.xmin = parseInt(mincoord[0]);
+					map.ymin = parseInt(mincoord[1]);
+					
+					maxcoord = coords[coords.length-1].split(':');
+					map.xmax = parseInt(maxcoord[0]);
+					map.ymax = parseInt(maxcoord[1]);
+ 					obj.objects.map(function(o){
+ 						approx_maps[o.size].map(
+ 							function(c){
+ 								object_map[make_str_coord([c[0]+o.coords[0], c[1]+o.coords[1]])] = o;
+ 							}
+ 						);
+ 						objects[o.id] = o;
+ 					});
+ 					str = "";
+ 					models = {"kob1":"@",
+ 					          "drak1":"&",
+ 					          "sword":")",
+ 					          "wall":"#",
+ 					          "floor":"." };
+ 					for(var y = map.ymin; y<=map.ymax; y++){
+ 						str += "<tr>";
+ 						for(var x = map.xmin; x<=map.xmax; x++){
+ 							str_coord = make_str_coord([x,y])
+ 							if(str_coord in object_map){
+ 								o = object_map[str_coord];
+ 								ch = models[o.model];
+ 								cls = "object";
+ 								if (o.id == joined_crid){
+ 									cls += " my_cr";
+ 								}
+ 								str += '<td class="'+cls+'", oid='+o.id+' >'+ch +'</td>';
+ 							} else if(str_coord in map){
+ 								t = map[str_coord];
+ 								ch = models[t.type];
+ 								str += '<td xpos="'+x+'" ypos="'+y+'" t_type="'+t.type+'" >'+ch+'</td>';
+ 							} else {
+ 								str += '<td class="t_undef"> </td>';
+ 							}
+ 						}
+ 						str += '</tr>';
+ 					}
+ 					
 					$("#field").html(str);
 					$("#game_turn").html(obj.turn);
 					break;
+					
 				case "responses":
+					//TODO: register enter/exit
 					$("#game_turn").html(obj.turn+1);
-				break;
+					break;
 					
 				}
 			};
@@ -149,6 +214,44 @@
 					ypos = e.toElement.getAttribute('ypos')
 					//alert(xpos+", "+ypos);
 				});
+				
+				function update_info(){
+					var hoof = $('.object_hovered');
+					var sel = $('.object_selected');
+					obj = false;
+					if (hoof.length != 0){
+						obj = objects[hoof.attr('oid')]
+					} else if (sel.length != 0) {
+						obj = objects[sel.attr('oid')]
+					}
+					if (obj == false){
+						str = 'Nothing selected';
+					} else {
+						str = "<ul>";
+						for (var p in obj){
+							str += '<li>'+p+' — '+obj[p]+'</li>';
+						}
+					}
+					$('#target_description').html(str);
+				}
+				
+				function get_td_by_object(o){
+					return $('td[oid="'+$(o).attr('oid')+'"]');
+				}
+				
+				$('#field').on('mouseenter mouseleave','td.object', function(){
+					get_td_by_object(this).toggleClass('object_hovered');
+					update_info();
+				});
+				
+				$('#field').on('click','td.object', function(){
+					get_td_by_object(this).toggleClass('object_selected');
+					$('.object_selected').not('[oid='+$(this).attr('oid')+']').removeClass('object_selected');
+					update_info();
+					
+				});
+				
+				
 			});
 		</script>
 	</head>
