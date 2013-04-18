@@ -10,12 +10,42 @@ EXECUTOR = ThreadPoolExecutor(max_workers=4)
 TIMEOUT = 15
 MAX_TIME = 100
 
-loc_locks = defaultdict(RLock)
-loc_updaters = {}
-loc_requests = defaultdict(list)
-loc_responses = defaultdict(list)
+class AssignOnce:
+    ''' Descriptor, which prevents accidential overwriting of attributes:
+    >>> class T:
+    ...     a = AssignOnce('a')
+    ... 
+    >>> t = T()
+    >>> t.a
+    >>> t.a = 3
+    >>> t.a = 4
+    Traceback (most recent call last):
+        ...
+    ValueError: Overwriting _a
+    >>> t.a = None
+    >>> t.a = 10
+    '''
+    
+    def __init__(self, name):
+        self.name = '_'+name
+    
+    def __get__(self, obj, owner=None):
+        return getattr(obj, self.name, None)
+    
+    def __set__(self, obj, val):
+        if val != None and getattr(obj, self.name, None) != None:
+            raise ValueError("Overwriting "+self.name)
+        setattr(obj, self.name, val)
 
-logic_functions = {}
+class LocationBean:
+    updater = AssignOnce('updater')
+    def __init__(self):
+        self.lock = RLock()
+        self.requests = []
+        self.responses = []
+        self.new_objs = []
+        
+loc_containers = defaultdict(LocationBean)
 
 
 class Player:
@@ -36,6 +66,8 @@ class Player:
         return [p for p in cls.players.values() if p.loc_id == loc_id]
 
 
+logic_functions = {}
+
 def logic(func):
     ''' Registers function as action,
     which can be performed with request
@@ -50,7 +82,7 @@ def locking(loc_id):
     def wrapper(func):
         @EXECUTOR.submit
         def job():
-            with loc_locks[loc_id]:
+            with loc_containers[loc_id].lock:
                 try:
                     func()
                 except:
@@ -78,12 +110,12 @@ def add_updater(loc_id, loop = None):
     if loop:
         args.append(loop)
     upd = tornado.ioloop.PeriodicCallback(*args)
-    loc_updaters[loc_id] = upd
+    loc_containers[loc_id].updater = upd
     upd.start()
 
 def check_update(player):
     #TODO: invoke turn update if all committed
-    if player.loc_id not in loc_updaters:
+    if player.loc_id not in loc_containers:
         add_updater(player.loc_id)
         
 def create_response(request, success = True, **kw):
@@ -116,7 +148,7 @@ def create_loc_updater(id):
             #TODO: implement simultaneous actions
             for r in requests:
                 try:
-                    logic_functions[r['type']](r)
+                    logic_functions[r['type'].lower()](r)
                 except:
                     logging.exception("Error in logic function")
                 logging.debug("Processing {!s}".format(r))
@@ -142,7 +174,6 @@ def init(loop):
 
 @logic
 def enter(request):
-    logging.debug("ENTERING...")
     with db.Handler() as h:
         l = h.get_location(request['loc_id'])
         s = h.refresh(request['source'])
@@ -152,6 +183,7 @@ def enter(request):
                 s.coords = cell
                 s.loc_id = l.id
                 create_response(request, target_cell = cell)
+                
                 break
         else:
             create_response(request, success = False)
