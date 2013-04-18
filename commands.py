@@ -73,6 +73,8 @@ def login(handler, login, passw):
 @cmd
 def join(handler, crid):
     player = handler.player
+    if player.loc_id:
+        handler.write_message(fail("Already joined"))
     with db.Handler() as h:
         player.creature = h.refresh(player.creatures[crid])
         if any(c == None for c in player.creature.coords) or not player.creature.loc_id:
