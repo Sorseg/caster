@@ -1,0 +1,2 @@
+-digest new_objects responses in client
+-implement MOVE requests sending
