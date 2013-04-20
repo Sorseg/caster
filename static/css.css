@@ -1,0 +1,43 @@
+#main_table td{
+	border: solid 1px #444;
+	vertical-align: top;
+}
+
+body {
+	background-color: #333;
+}
+
+input, textarea {
+	background-color: #555;
+	border: 1px;
+}
+
+#field{
+	font-family: monospace;
+	border-width: 0px;
+	border-collapse: collapse;
+	-webkit-user-select: none; /* Chrome/Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+ */
+	cursor: default;
+}
+
+#field td.object{
+	background-color: #666;
+}
+
+#field td.object_selected{
+	background-color: #33f;
+}
+
+#field td.object_hovered{
+	background-color: #3f3;
+}
+
+#field td.object_hovered.object_selected{
+	background-color: #6ff;
+}
+
+#field td.my_cr{
+	background-color: #633;
+}
