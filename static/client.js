@@ -10,10 +10,13 @@ var approx_maps = [
 var anim_length = 200;
 var ws = new WebSocket('ws://'+document.location.host);
 var joined_crid;
-var game_state;
 var objects = {};
 var creatures;
 var zero_pad = "0000";
+
+var	map = {};
+var object_map = {};
+var coords = [];
 
 function pad_with_zeroes(coord){
 	return (zero_pad+coord).slice(-zero_pad.length)
@@ -49,6 +52,15 @@ var populate = function(crtr){
      row.appendChild(cell_name);
      row.appendChild(cell_use);
      tabBody.appendChild(row);
+}
+
+function add_object_to_map(o){
+	approx_maps[o.size].map(
+		function(c){
+			object_map[make_str_coord([c[0]+o.coords[0], c[1]+o.coords[1]])] = o;
+		}
+	);
+	objects[o.id] = o;
 }
 ws.onmessage = function(message) {
 	document.getElementsByName('output')[0].value += message.data+'\n';
@@ -92,14 +104,7 @@ ws.onmessage = function(message) {
 		maxcoord = coords[coords.length-1].split(':');
 		map.xmax = parseInt(maxcoord[0]);
 		map.ymax = parseInt(maxcoord[1]);
-		obj.objects.map(function(o){
-			approx_maps[o.size].map(
-				function(c){
-					object_map[make_str_coord([c[0]+o.coords[0], c[1]+o.coords[1]])] = o;
-				}
-			);
-			objects[o.id] = o;
-		});
+		obj.objects.map(add_object_to_map);
 		str = "";
 		models = {"kob1":"@",
 		          "drak1":"&",
@@ -135,6 +140,9 @@ ws.onmessage = function(message) {
 		
 	case "responses":
 		//TODO: register enter/exit
+		for(var i = 0; i < obj.new_objects.length; i++){
+			obj.new_objects
+		}
 		$("#game_turn").html(obj.turn+1);
 		break;
 		
@@ -189,6 +197,9 @@ $(function(){
 	});
 	
 	$('#field').on('click','td.object', function(){
+		if ($(this).attr('oid') == joined_crid){
+			return false;
+		}
 		get_td_by_object(this).toggleClass('object_selected');
 		$('.object_selected').not('[oid='+$(this).attr('oid')+']').removeClass('object_selected');
 		update_info();
