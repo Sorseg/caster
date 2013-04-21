@@ -1,11 +1,15 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
-		<!--TODO: Reconnect -->
 		<title>CASTER 0.0.0</title>
+		<link rel="stylesheet" href="css.css" />
+		
 		<script type="text/javascript" src="jquery-1.9.1.js">
 		</script>
-		<link rel="stylesheet" href="css.css" />
+		<script type="text/javascript" src="atom-full-compiled.js">
+		</script>
+		<script type="text/javascript" src="libcanvas-full-compiled.js">
+		</script>
 		<script src="client.js">
 		</script>
 	</head>
@@ -42,8 +46,17 @@
 				</div>
 			</td>
 			<td>
-				<table id="field">
-				</table>
+				<div id="field">
+				</div>
+				<script>
+					new function () {
+					    LibCanvas.extract();
+					
+					    atom.dom(function () {
+					        new Caster.Controller();
+					    });
+					};
+				</script>
 			</td>
 			<td width="200px">
 				<h3>Target:</h3>

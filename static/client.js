@@ -55,6 +55,10 @@ var populate = function(crtr){
 }
 
 function add_object_to_map(o){
+	//TODO: move somewhere more appropriate
+	if (o.id == joined_crid){
+		$('#cr_status').html(o.coords.join(', '))
+	}
 	approx_maps[o.size].map(
 		function(c){
 			object_map[make_str_coord([c[0]+o.coords[0], c[1]+o.coords[1]])] = o;
@@ -62,6 +66,49 @@ function add_object_to_map(o){
 	);
 	objects[o.id] = o;
 }
+
+function draw_field(){
+	coords.sort();
+	mincoord = coords[0].split(':');
+	map.xmin = parseInt(mincoord[0]);
+	map.ymin = parseInt(mincoord[1]);
+	
+	maxcoord = coords[coords.length-1].split(':');
+	map.xmax = parseInt(maxcoord[0]);
+	map.ymax = parseInt(maxcoord[1]);
+	str = "";
+	models = {"kob1":"@",
+	          "drak1":"&",
+	          "sword":")",
+	          "wall":"#",
+	          "floor":"." };
+	for(var y = map.ymin; y<=map.ymax; y++){
+		str += "<tr>";
+		for(var x = map.xmin; x<=map.xmax; x++){
+			str_coord = make_str_coord([x,y])
+			if(str_coord in object_map){
+				o = object_map[str_coord];
+				ch = models[o.model];
+				cls = "object";
+				if (o.id == joined_crid){
+					cls += " my_cr";
+				}
+				str += '<td class="'+cls+'", oid='+o.id+' >'+ch +'</td>';
+			} else if(str_coord in map){
+				t = map[str_coord];
+				ch = models[t.type];
+				str += '<td xpos="'+x+'" ypos="'+y+'" t_type="'+t.type+'" >'+ch+'</td>';
+			} else {
+				str += '<td class="t_undef"> </td>';
+			}
+		}
+		str += '</tr>';
+	}
+	
+	$("#field").html(str);
+
+}
+
 ws.onmessage = function(message) {
 	document.getElementsByName('output')[0].value += message.data+'\n';
 	var obj = JSON.parse(message.data)
@@ -83,74 +130,33 @@ ws.onmessage = function(message) {
 		$('#cr_name').html(creatures[obj.crid].name);
 		joined_crid = obj.crid;
 		break;
-		
+	/*
 	case "environment":
-		map = {};
-		object_map = {};
-		coords = [];
-		
 		obj.cells.map(function(cell){
 			
 			text_coords = make_str_coord(cell.coords);
 			coords.push(text_coords)
 			map[text_coords] = cell;
 		});
-		coords.sort();
-		
-		mincoord = coords[0].split(':');
-		map.xmin = parseInt(mincoord[0]);
-		map.ymin = parseInt(mincoord[1]);
-		
-		maxcoord = coords[coords.length-1].split(':');
-		map.xmax = parseInt(maxcoord[0]);
-		map.ymax = parseInt(maxcoord[1]);
 		obj.objects.map(add_object_to_map);
-		str = "";
-		models = {"kob1":"@",
-		          "drak1":"&",
-		          "sword":")",
-		          "wall":"#",
-		          "floor":"." };
-		for(var y = map.ymin; y<=map.ymax; y++){
-			str += "<tr>";
-			for(var x = map.xmin; x<=map.xmax; x++){
-				str_coord = make_str_coord([x,y])
-				if(str_coord in object_map){
-					o = object_map[str_coord];
-					ch = models[o.model];
-					cls = "object";
-					if (o.id == joined_crid){
-						cls += " my_cr";
-					}
-					str += '<td class="'+cls+'", oid='+o.id+' >'+ch +'</td>';
-				} else if(str_coord in map){
-					t = map[str_coord];
-					ch = models[t.type];
-					str += '<td xpos="'+x+'" ypos="'+y+'" t_type="'+t.type+'" >'+ch+'</td>';
-				} else {
-					str += '<td class="t_undef"> </td>';
-				}
-			}
-			str += '</tr>';
-		}
-		
-		$("#field").html(str);
+		draw_field();
 		$("#game_turn").html(obj.turn);
 		break;
 		
 	case "responses":
 		//TODO: register enter/exit
-		for(var i = 0; i < obj.new_objects.length; i++){
-			obj.new_objects
-		}
+		obj.new_objects.map(add_object_to_map)
+		draw_field();
 		$("#game_turn").html(obj.turn+1);
 		break;
-		
+	*/
 	}
 };
+
 ws.onclose = function(){
 	document.getElementsByName('output')[0].value += "DISCONNECTED\n";
 }
+
 function do_login(form)
 {
 	f = document.getElementById('login_form')
@@ -207,4 +213,27 @@ $(function(){
 	});
 	
 	
+});
+
+atom.declare( 'Caster.Controller', {
+    initialize: function () {
+    	this.engine = new TileEngine({
+    		size: new Size(5,5),
+    		cellSize: new Size(10,10),
+    		cellMargin: new Size(0,0),
+    		defaultValue: 'closed'
+    	}).setMethod('unknown', this.draw.bind(this));
+    	
+    	this.app = new App({
+			size  : new Size(640,480),
+			appendTo: '#field',
+			simple: true
+		});
+		console.log("init");
+    },
+    draw: function (cell, ctx) {
+    	console.log(cell);
+    	console.log(ctx);
+    }
+
 });
