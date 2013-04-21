@@ -219,21 +219,39 @@ atom.declare( 'Caster.Controller', {
     initialize: function () {
     	this.engine = new TileEngine({
     		size: new Size(5,5),
-    		cellSize: new Size(10,10),
-    		cellMargin: new Size(0,0),
+    		cellSize: new Size(25,25),
+    		cellMargin: new Size(1,1),
     		defaultValue: 'closed'
-    	}).setMethod('unknown', this.draw.bind(this));
+    	}).setMethod('#', this.draw.bind(this));
     	
     	this.app = new App({
 			size  : new Size(640,480),
 			appendTo: '#field',
 			simple: true
 		});
-		console.log("init");
+	
+		
+		this.element = TileEngine.Element.app( this.app, this.engine );
+		for (var i=0; i<5; i++){
+			for (var j=0; j<5; j++){
+				this.engine.getCellByIndex(new Point(i,j)).value = '#';
+			}
+		}
     },
-    draw: function (cell, ctx) {
-    	console.log(cell);
-    	console.log(ctx);
+    draw: function (ctx, cell) {
+    	ctx.font = "23pt monospace";
+    	ctx.fill(cell.rectangle, '#444');
+    	ctx.fillText("#", cell.rectangle.bottomLeft.x, cell.rectangle.bottomLeft.y);
+    	//console.log(cell);
+    	//console.log(ctx);
     }
 
 });
+
+new function () {
+    LibCanvas.extract();
+
+    atom.dom(function () {
+        new Caster.Controller();
+    });
+};
