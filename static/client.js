@@ -8,7 +8,12 @@ var approx_maps = [
 
 
 var anim_length = 200;
-var ws = new WebSocket('ws://'+document.location.host);
+var ws;
+
+var caster_controller;
+
+
+
 var joined_crid;
 var objects = {};
 var creatures;
@@ -108,55 +113,57 @@ function draw_field(){
 	$("#field").html(str);
 
 }
+function connect(){
+	ws = new WebSocket('ws://'+document.location.host);
 
-ws.onmessage = function(message) {
-	document.getElementsByName('output')[0].value += message.data+'\n';
-	var obj = JSON.parse(message.data)
-	switch(obj.what){
+	ws.onmessage = function(message) {
+		document.getElementsByName('output')[0].value += message.data+'\n';
+		var obj = JSON.parse(message.data)
+		switch(obj.what){
+		
+		case "login":
+			$('#login_form').hide(anim_length);
+			creatures = Array();
+			obj.creatures.map(function(crtr){
+				creatures[crtr.id] = crtr;
+				populate(crtr)});
+				
+			$('#creatures').show(anim_length);
+			break;
+			
+		case "joined":
+			$('#creatures').hide(anim_length);
+			$('#cr_info').show(anim_length);
+			$('#cr_name').html(creatures[obj.crid].name);
+			joined_crid = obj.crid;
+			break;
+		/*
+		case "environment":
+			obj.cells.map(function(cell){
+				
+				text_coords = make_str_coord(cell.coords);
+				coords.push(text_coords)
+				map[text_coords] = cell;
+			});
+			obj.objects.map(add_object_to_map);
+			draw_field();
+			$("#game_turn").html(obj.turn);
+			break;
+			
+		case "responses":
+			//TODO: register enter/exit
+			obj.new_objects.map(add_object_to_map)
+			draw_field();
+			$("#game_turn").html(obj.turn+1);
+			break;
+		*/
+		}
+	};
 	
-	case "login":
-		$('#login_form').hide(anim_length);
-		creatures = Array();
-		obj.creatures.map(function(crtr){
-			creatures[crtr.id] = crtr;
-			populate(crtr)});
-			
-		$('#creatures').show(anim_length);
-		break;
-		
-	case "joined":
-		$('#creatures').hide(anim_length);
-		$('#cr_info').show(anim_length);
-		$('#cr_name').html(creatures[obj.crid].name);
-		joined_crid = obj.crid;
-		break;
-	/*
-	case "environment":
-		obj.cells.map(function(cell){
-			
-			text_coords = make_str_coord(cell.coords);
-			coords.push(text_coords)
-			map[text_coords] = cell;
-		});
-		obj.objects.map(add_object_to_map);
-		draw_field();
-		$("#game_turn").html(obj.turn);
-		break;
-		
-	case "responses":
-		//TODO: register enter/exit
-		obj.new_objects.map(add_object_to_map)
-		draw_field();
-		$("#game_turn").html(obj.turn+1);
-		break;
-	*/
+	ws.onclose = function(){
+		document.getElementsByName('output')[0].value += "DISCONNECTED\n";
 	}
-};
-
-ws.onclose = function(){
-	document.getElementsByName('output')[0].value += "DISCONNECTED\n";
 }
-
 function do_login(form)
 {
 	f = document.getElementById('login_form')
@@ -222,7 +229,9 @@ atom.declare( 'Caster.Controller', {
     		cellSize: new Size(25,25),
     		cellMargin: new Size(1,1),
     		defaultValue: 'closed'
-    	}).setMethod('#', this.draw.bind(this));
+    	}).setMethod({'#':this.draw.bind(this),
+    	              '.':this.draw.bind(this)}
+    	              );
     	
     	this.app = new App({
 			size  : new Size(640,480),
@@ -234,24 +243,46 @@ atom.declare( 'Caster.Controller', {
 		this.element = TileEngine.Element.app( this.app, this.engine );
 		for (var i=0; i<5; i++){
 			for (var j=0; j<5; j++){
-				this.engine.getCellByIndex(new Point(i,j)).value = '#';
+				this.engine.getCellByIndex(new Point(i,j)).value = Math.random()>0.5?'#':'.';
 			}
 		}
     },
     draw: function (ctx, cell) {
-    	ctx.font = "23pt monospace";
+    	//ctx.font = "23pt monospace";
     	ctx.fill(cell.rectangle, '#444');
-    	ctx.fillText("#", cell.rectangle.bottomLeft.x, cell.rectangle.bottomLeft.y);
+    	for (var m = 0; m<2; m++){
+    		    coord_diff = [[-1,0],[0,-1]][m];
+    		    neigh_coord = cell.point.clone().move(coord_diff);
+    			neigh_cell = cell.engine.getCellByIndex(neigh_coord);
+    			if ((neigh_cell != null) && (neigh_cell.value != cell.value)){
+    				from = cell.rectangle.from;
+    				to = coord_diff[1]?cell.rectangle.topRight:cell.rectangle.bottomLeft;
+    				//ctx.stroke(Rectangle({center:from, size:[3,3]}),'white')
+    				//ctx.stroke(Rectangle({center:to, size:[3,3]}),'white')
+    				ctx.save()
+    				//.clip(cell.rectangle)
+    				.set({ lineWidth: 2 })
+    				.stroke(new Line(from, to),'#999')
+    				.restore();
+    			}
+    	}
+    	//ctx.fillText("#", cell.rectangle.bottomLeft.x, cell.rectangle.bottomLeft.y);
     	//console.log(cell);
     	//console.log(ctx);
+    	ctx.text({
+    	text:cell.value,
+    	to: cell.rectangle,
+    	align:'center',
+    	size:18,
+    	family:'monospace'
+    	})
     }
 
 });
 
-new function () {
-    LibCanvas.extract();
 
-    atom.dom(function () {
-        new Caster.Controller();
-    });
-};
+LibCanvas.extract();
+
+atom.dom(function () {
+    caster_controller = new Caster.Controller();
+});
