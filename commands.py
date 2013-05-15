@@ -92,5 +92,5 @@ def join(handler, crid):
         logic.send_environment(player)
 
 @cmd 
-def request(handler):
+def request(handler, **kw):
     pass
