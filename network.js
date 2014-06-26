@@ -6,6 +6,11 @@
 var ws;
 var joined_crid;
 
+$(function(){
+    ws = new WebSocket('ws://sorseg.ru/caster');
+});
+
+/*
 atom.declare('Caster.Network', {
 	
 	initialize: function(controller){
@@ -58,3 +63,4 @@ atom.declare('Caster.Network', {
 
 
 })
+*/

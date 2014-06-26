@@ -1,25 +1,110 @@
-#main_table td{
-	border: solid 1px #444;
-	vertical-align: top;
-}
-
 body {
 	background-color: #333;
+    width: 95%;
+    height: 95%;
 }
 
-input, textarea {
+html {
+    height: 100%;
+}
+
+input, textarea, label, button {
+	border: 1px solid #404040;
+}
+
+input, textarea, button {
 	background-color: #555;
-	border: 1px;
+}
+
+#login_form {
+    width: 250px;
+    display: table;
+    border-spacing: 2px;
+    border: 1px solid #404040;
+    margin-bottom: 2px;
+}
+
+.block {
+    border: 1px solid #404040;
+    display: inline-block;
+    height: 100%;
+    vertical-align: top;
+    margin: 2px;
+}
+
+#game_board {
+    height: 70%;
+}
+
+#character_info {
+    width: 20%;
+}
+
+#field_wrapper {
+    width: 50%;
+    height: 100%;
+}
+
+#enemy_info {
+    width: 20%
+}
+
+#chat_wrapper {
+    border: 1px solid #404040;
+    display: inline-block;
+}
+
+div.connect_button_wrapper {
+    margin-bottom: 2px;
+    border: 1px solid #404040;
+    display: inline-block;
+}
+
+div.input {
+    display: table-row;
+}
+
+div.input label, button {
+    width: 70px;
+    text-align: center;
+}
+
+div.input label,
+div.input input {
+    display: table-cell;
+}
+
+button {
+    margin: 2px;
+}
+
+div.input label,
+div.input input,
+div.input button {
+    height: 20px;
+    box-sizing: border-box;
+    vertical-align: top;
+    margin: 0px;
 }
 
 #field{
 	font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
 	border-width: 0px;
 	border-collapse: collapse;
-	-webkit-user-select: none; /* Chrome/Safari */        
-	-moz-user-select: none; /* Firefox */
-	-ms-user-select: none; /* IE10+ */
+	-webkit-user-select: none;      
+	-moz-user-select: none;
+	-ms-user-select: none;
 	cursor: default;
+    background: #404040;
+}
+
+#field td {
+    height: 14px;
+    width: 14px;
+    padding: 0px;
+    text-align: center;
 }
 
 #field td.object{
@@ -40,18 +125,4 @@ input, textarea {
 
 #field td.my_cr{
 	background-color: #633;
-}
-
-#action_table{
-	background-color: #444;
-	border: solid 1px grey;
-}
-
-.action{
-	background: #333;
-	border: solid 1px #444;
-}
-
-.action.selected{
-	background-color: #999;	
 }
