@@ -30,6 +30,7 @@ input, textarea, button {
     height: 100%;
     vertical-align: top;
     margin: 2px;
+    box-sizing: border-box;
 }
 
 #game_board {
@@ -52,6 +53,7 @@ input, textarea, button {
 #chat_wrapper {
     border: 1px solid #404040;
     display: inline-block;
+    margin-top: 2px;
 }
 
 div.connect_button_wrapper {
@@ -89,7 +91,7 @@ div.input button {
 
 #field{
 	font-family: monospace;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: bold;
 	border-width: 0px;
 	border-collapse: collapse;
@@ -100,9 +102,12 @@ div.input button {
     background: #404040;
 }
 
-#field td {
+#field div {
     height: 14px;
-    width: 14px;
+    width: 14px;       
+}
+
+#field td {
     padding: 0px;
     text-align: center;
 }

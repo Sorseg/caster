@@ -20,15 +20,6 @@
                 SORSEG
             </div><div class="block" id="field_wrapper">
                 <table id="field">
-                    <tr><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>@</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>.</td><td>#</td></tr>
-                    <tr><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td><td>#</td></tr>
                 </table>
             </div><div class="block" id="enemy_info">
                 ENEMY
@@ -37,6 +28,31 @@
         <div id="chat_wrapper">
             <textarea id="console_output" rows="6" cols="80"></textarea>
         </div>
+        
+    <script type="application/javascript">
+        "use strict";
+        var temp_map = [
+            '######################',
+            '#....................#',
+            '#....................#',
+            '#....................#',
+            '#....................#',
+            '#....................#',
+            '#..............@.....#',
+            '######################'
+        ];
+        
+        for (var i in temp_map){
+            var line = '<tr>';
+            for (var j in temp_map[i].split('')){
+                line += '<td><div>' + temp_map[i][j] + '</div></td>';
+            }
+            line += '</tr>';
+            $('#field').append(line);
+        }
+        
+               
+    </script>
     <!--
 	<table id="main_table" width="100%">
 		<tr>
