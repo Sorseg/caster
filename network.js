@@ -1,8 +1,27 @@
 /**
  * @author sorseg
  */
+var STATE_CONNECTED = 'connected',
+    STATE_DISCONNECTED = 'disconnected';
+
+function MockNetworkClient(){
+    var state = STATE_DISCONNECTED;
+    
+    this.connect = function(){
+        log("MOCKING CONNECTION");
+        state = STATE_CONNECTED;
+    }
+    
+    this.login = function(){
+        log("MOCKING LOGIN");
+        
+    }
+
+}
 
 
+NetworkClient = MockNetworkClient;
+/*
 var ws;
 var joined_crid;
 var STATE_CONNECTED = 'connected',
@@ -21,7 +40,7 @@ $(function(){
     connect();
 });
 
-/*
+
 atom.declare('Caster.Network', {
 	
 	initialize: function(controller){
