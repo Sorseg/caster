@@ -5,9 +5,20 @@
 
 var ws;
 var joined_crid;
+var STATE_CONNECTED = 'connected',
+    STATE_DISCONNECTED = 'disconnected'
+
+var connection_state = STATE_DISCONNECTED;
+
+function connect(){
+    if (connection_state == STATE_CONNECTED){
+        throw "Already Connected";
+    }
+    ws = new WebSocket('ws://sorseg.ru/caster');
+}
 
 $(function(){
-    ws = new WebSocket('ws://sorseg.ru/caster');
+    connect();
 });
 
 /*
