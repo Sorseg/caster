@@ -1,6 +1,7 @@
 /**
  * @author sorseg
  */
+"use strict";
 var STATE_CONNECTED = 'connected',
     STATE_DISCONNECTED = 'disconnected';
 
@@ -10,17 +11,18 @@ function MockNetworkClient(){
     this.connect = function(){
         log("MOCKING CONNECTION");
         state = STATE_CONNECTED;
+        on_connection();
     }
     
     this.login = function(){
         log("MOCKING LOGIN");
-        
+        on_login();
     }
 
 }
 
+var NetworkClient = MockNetworkClient;
 
-NetworkClient = MockNetworkClient;
 /*
 var ws;
 var joined_crid;

@@ -10,6 +10,7 @@ html {
 
 input, textarea, label, button {
 	border: 1px solid #404040;
+    color: black;
 }
 
 input, textarea, button {
@@ -21,7 +22,7 @@ input, textarea, button {
     display: table;
     border-spacing: 2px;
     border: 1px solid #404040;
-    margin-bottom: 2px;
+    margin: 2px;
 }
 
 .block {
@@ -33,8 +34,19 @@ input, textarea, button {
     box-sizing: border-box;
 }
 
-#game_board {
+#header {
+    height: 15%;
+    box-sizing: border-box;
+}
+
+#middle_div {
     height: 70%;
+    box-sizing: border-box;
+    padding: 2px;
+}
+
+#game_board {
+    height: 100%;
 }
 
 #character_info {
@@ -42,7 +54,7 @@ input, textarea, button {
 }
 
 #field_wrapper {
-    width: 50%;
+    width: 55%;
     height: 100%;
 }
 
@@ -50,14 +62,22 @@ input, textarea, button {
     width: 20%
 }
 
-#chat_wrapper {
+#console_wrapper {
+    height: 15%;
+    box-sizing: border-box;
+}
+
+#console_output{
     border: 1px solid #404040;
-    display: inline-block;
-    margin-top: 2px;
+    margin: 2px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    
 }
 
 div.connect_button_wrapper {
-    margin-bottom: 2px;
+    margin: 2px;
     border: 1px solid #404040;
     display: inline-block;
 }
@@ -130,4 +150,8 @@ div.input button {
 
 #field td.my_cr{
 	background-color: #633;
+}
+
+.hidden{
+    display: none !important;
 }
