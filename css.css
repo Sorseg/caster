@@ -1,7 +1,21 @@
 body {
-	background-color: #333;
+	background-color: #555;
     width: 95%;
     height: 95%;
+    font-family: sans-serif;
+}
+
+p.status {
+    margin: 3px;
+}
+
+p.status > span {
+    width: 20%;
+    display: inline-block;
+}
+
+p.status .val {
+    background: #666;
 }
 
 html {
@@ -14,7 +28,7 @@ input, textarea, label, button {
 }
 
 input, textarea, button {
-	background-color: #555;
+	background-color: #777;
 }
 
 #login_form {
@@ -43,10 +57,11 @@ input, textarea, button {
     height: 70%;
     box-sizing: border-box;
     padding: 2px;
+    overflow: hidden;
 }
 
 #game_board {
-    height: 100%;
+    height: 98%;
 }
 
 #character_info {

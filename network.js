@@ -1,24 +1,47 @@
-/**
- * @author sorseg
- */
 "use strict";
-var STATE_CONNECTED = 'connected',
-    STATE_DISCONNECTED = 'disconnected';
+
+
+var STATE_CONNECTED = 'Connected',
+    STATE_DISCONNECTED = 'Disconnected',
+    STATE_CONNECTING = 'Connecting...';
+
+
+var EVENT_CONNECTED = 'network.connected',
+    EVENT_CONN_LOST = 'network.disconnected';
+
 
 function MockNetworkClient(){
-    var state = STATE_DISCONNECTED;
     
-    this.connect = function(){
-        log("MOCKING CONNECTION");
-        state = STATE_CONNECTED;
-        on_connection();
+    var this_ = this;
+    
+    this_.state = STATE_DISCONNECTED;
+    
+    this_.set_state = function(state){
+        this_.state = state;
     }
     
-    this.login = function(){
-        log("MOCKING LOGIN");
-        on_login();
+    this_.get_state = function(){
+        return this_.state;
     }
-
+    
+    this_.connect = function(){
+        this_.state = STATE_CONNECTING;
+        setTimeout(function(){
+            this_.state = STATE_CONNECTED;
+            trigger_event(EVENT_CONNECTED);
+        }, 500);
+    };
+    
+    this_.login = function(){
+        game_controller.state = STATE_LOGGING_IN;
+        setTimeout(function(){
+            var player = new Player();
+            
+            trigger_event(EVENT_LOGIN);
+        }, 500);
+    }
+    
+    log("Mock controller initialized");
 }
 
 var NetworkClient = MockNetworkClient;
