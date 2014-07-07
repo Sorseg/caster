@@ -10,6 +10,52 @@ var EVENT_CONNECTED = 'network.connected',
     EVENT_CONN_LOST = 'network.disconnected';
 
 
+function NetworkClient(){
+    
+    var _this = this;
+    _this.ws = null;
+    _this.state = STATE_DISCONNECTED;
+
+    _this.set_state = function(state){
+        _this.state = state;
+    }
+    
+    _this.get_state = function(){
+        return _this.state;
+    }
+    
+    _this.connect = function(){
+        _this.state = STATE_CONNECTING;
+        try {
+            this.ws.close();
+        } catch(e) {}
+        _this.ws = new WebSocket('ws://127.1:7778');
+        _this.ws.onopen = function(){
+            _this.state = STATE_CONNECTED;
+            trigger_event(EVENT_CONNECTED);
+        }
+        _this.ws.onmessage = function(evt){	_this.dispatcher(JSON.parse(evt.data)) };
+        _this.ws.onerror = function(evt){console.error(evt)};
+    };
+    
+    _this.dispatcher = function(msg){
+        switch(msg.what){
+            case 'creature':
+                var creature = new PlayerCreature();
+                creature.name = msg.name
+                trigger_event(EVENT_LOGIN, creature);
+            break;
+        }
+    }
+    
+    _this.login = function(login, password){
+        game_controller.state = STATE_LOGGING_IN;
+        _this.ws.send(JSON.stringify({what:"login", login: login, password: password})); 
+    }
+    
+}
+
+
 function MockNetworkClient(){
     
     var this_ = this;
@@ -44,7 +90,7 @@ function MockNetworkClient(){
     log("Mock controller initialized");
 }
 
-var NetworkClient = MockNetworkClient;
+//var NetworkClient = MockNetworkClient;
 
 /*
 var ws;

@@ -20,12 +20,13 @@ function on_connection_lost(){
     //TODO: game board disconnected overlay
 }
 
-function on_login(character){
+function on_login(evt, creature){
     //TODO: update gui according to character;
     game_controller.state = STATE_LOGGED_IN;
     hide_element($('#login_form'));
     show_element($('#game_board'));
     localStorage.setItem('username', $('#login').val());
+    $('#character_info').text(creature.name);
 }
 
 $(function(){
