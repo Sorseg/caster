@@ -5,15 +5,15 @@
 		<link rel="stylesheet" href="css.css" />
 
 		<script type="text/javascript" src="lib/jquery-1.9.1.js"></script>
-		<script type="text/javascript" src="network.js"></script>
 		<script type="text/javascript" src="controller.js"></script>
+		<script type="text/javascript" src="network.js"></script>
 		<script type="text/javascript" src="view.js"></script>
 		<script type="text/javascript" src="player.js"></script>
 	</head>
 	
 	<body>
         <div id="header">
-            <p class="status"><span>Game status: <span id="game_status" class="val">Loading...</span></span>
+            <p class="status"><span>Game status: <span id="game_status" class="val">Logged out</span></span>
                               <span>Connection status: <span id="connection_status" class="val">Disconnected</span></span>
             </p>
             <div id="connect_button_wrapper"><button id="connect_button">Connect</button></div>
@@ -26,6 +26,8 @@
         <div id="middle_div">
             <div id="game_board">
                 <div class="block" id="character_info">
+                    <p>Name: <span id="character_name"> </span></p>
+                    <p>Pos: <span id="character_position"> </span></p>
                 </div><div class="block" id="field_wrapper">
                     <table id="field">
                     </table>
