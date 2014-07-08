@@ -21,14 +21,21 @@ function trigger_event(evt, args){
 }
 
 function GameController(){
-    this.state = STATE_LOGGED_OUT;
-    
     var self = this;
+    self.state = STATE_LOGGED_OUT;
+    self.terrain = {};
+    
     self.logout = function(){
         self.state = STATE_LOGGED_OUT;
         trigger_event(EVENT_LOGOUT);
     }
     register_event(EVENT_CONN_LOST, self.logout)
+    
+    self.update_terrain = function(terr){
+        $.extend(self.terrain, terr);
+        terrain_redraw(self.terrain, self.creature.coords);
+    }
+    
 }
 
 

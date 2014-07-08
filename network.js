@@ -27,7 +27,7 @@ function NetworkClient(){
             trigger_event(EVENT_CONNECTED);
         }
         self.ws.onmessage = function(evt){
-            console.log("MSG:"+evt.data);
+            //console.log("MSG:"+evt.data);
             self.dispatcher(JSON.parse(evt.data));
         };
         self.ws.onerror = function(evt){log("connection error");};
@@ -38,15 +38,27 @@ function NetworkClient(){
     };
     
     self.dispatcher = function(msg){
-        switch(msg.what){
+        var message_type = msg.what;
+        delete msg.what;
+        switch(message_type){
             case 'creature':
                 var creature = new PlayerCreature(msg);
+                game_controller.creature = creature;
                 trigger_event(EVENT_LOGIN, creature);
                 game_controller.state = STATE_LOGGED_IN;
                 break;
-            case 'environment':
-				break;
                 
+            case 'nocreature':
+                if (game_controller.state == STATE_LOGGING_IN){
+                    game_controller.state = STATE_LOGGED_OUT;
+                    log("No creature found");
+                    trigger_event(EVENT_LOGOUT);
+                }
+                break;
+                
+            case 'environment':
+                game_controller.update_terrain(msg);
+				break;
                 
             case undefined:
                 log("undefined message type:"+msg)
