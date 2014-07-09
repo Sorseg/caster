@@ -21,7 +21,11 @@ function NetworkClient(){
         try {
             this.ws.close();
         } catch(e) {}
-        self.ws = new WebSocket('ws://127.1:7778');
+        var address = 'ws://sorseg.ru:7778';
+        if (document.location.protocol == 'file:'){
+            address = 'ws://127.1:7778';
+        }
+        self.ws = new WebSocket(address);
         self.ws.onopen = function(){
             self.state = STATE_CONNECTED;
             trigger_event(EVENT_CONNECTED);
