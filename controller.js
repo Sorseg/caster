@@ -24,6 +24,7 @@ function GameController(){
     var self = this;
     self.state = STATE_LOGGED_OUT;
     self.terrain = {};
+    self.creature = null;
     
     self.logout = function(){
         self.state = STATE_LOGGED_OUT;
@@ -36,6 +37,12 @@ function GameController(){
         terrain_redraw(self.terrain, self.creature.coords);
     }
     
+    self.walk = function(coords){
+        network_client.ws.send(JSON.stringify({
+            what:"walk",
+            where:coords
+        }))
+    }
 }
 
 

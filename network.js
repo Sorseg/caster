@@ -60,6 +60,10 @@ function NetworkClient(){
                 game_controller.update_terrain(msg);
 				break;
                 
+            case 'walk':
+                game_controller.creature.coords = $.map(msg.to, function(val){return parseInt(val)});
+                break;
+                
             case undefined:
                 log("undefined message type:"+msg)
                 break;

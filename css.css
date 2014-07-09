@@ -147,6 +147,11 @@ div.input button {
     text-align: center;
 }
 
+#field td.walkable {
+    background: green !important;
+    cursor: pointer;
+}
+
 #field td.object{
 	background-color: #666;
 }

@@ -3,7 +3,7 @@ String.prototype.format = function(vars){
 }
 
 terr_chars ={
-    floor:'.',
+    floor:'&#xb7;',
     wall:'#',
     nothing:""
 };
@@ -70,14 +70,33 @@ function terrain_redraw(terr, pos){
             var div = $('<div>').appendTo(cell);
             
             if (typeof point != 'undefined'){
+                if((sq_dist([x, y], pos) <= 2) &&
+                   (sq_dist([x, y], pos) > 0) &&
+                   (point[3] == 'floor')){
+                    cell.addClass("walkable");
+                }
                 cell.css("background","rgb("+point.slice(0,3).join(',')+")");
-                div.text(terr_chars[point[3]]);
+                div.html(terr_chars[point[3]]);
             }
         }
     }
     $('#field').html(new_table);
     $('#field tr[posy={y}] td[posx={x}] div'.format({x:pos[0], y:pos[1]})).text('@');
 }
+
+function sq_dist(p1, p2){
+    var dx = p2[0] - p1[0];
+    var dy = p2[1] - p1[1];
+    return dx*dx+dy*dy;
+}
+
+
+function get_coords(td){
+    var x = td.attr('posx');
+    var y = td.parent().attr('posy');
+    return [x, y];
+}
+
 
 
 $(function(){
@@ -101,6 +120,13 @@ $(function(){
     });
     
     $('#connect_button').click();
+    
+    $('#field').on('click', 'td', function(evt){
+        var td = $(evt.target).parents('td');
+        if(td.hasClass('walkable')){
+            game_controller.walk(get_coords(td));
+        }
+    });
     
 });
 
