@@ -54,11 +54,11 @@ function NetworkClient(){
                 break;
                 
             case 'nocreature':
-                if (game_controller.state == STATE_LOGGING_IN){
-                    game_controller.state = STATE_LOGGED_OUT;
-                    log("No creature found");
-                    trigger_event(EVENT_LOGOUT);
-                }
+                game_controller.login_fail(message_type);
+                break;
+                
+            case 'already logged in':
+                game_controller.login_fail(message_type);
                 break;
                 
             case 'environment':
@@ -71,7 +71,11 @@ function NetworkClient(){
                 break;
                 
             case undefined:
-                log("undefined message type:"+msg)
+                log("Undefined message type:"+" "+JSON.stringify(msg))
+                break;
+                
+            default:
+                log("Unknown message type:"+message_type+" "+JSON.stringify(msg))
                 break;
         }
     }

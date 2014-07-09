@@ -43,6 +43,13 @@ function GameController(){
             where:coords
         }))
     }
+    
+    self.login_fail = function(reason){
+        if (self.state == STATE_LOGGING_IN){
+            log("Login failed: "+reason);
+            self.logout();
+        }
+    }
 }
 
 
