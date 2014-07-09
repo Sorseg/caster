@@ -54,7 +54,7 @@ function on_login(evt, creature){
     show_element($('#game_board'));
     localStorage.setItem('username', $('#login').val());
     $('#character_name').text(creature.name);
-    $('#character_position').text(creature.coords);
+    view_update_creature();
 }
 
 register_event(EVENT_LOGIN, on_login);
@@ -82,6 +82,10 @@ function terrain_redraw(terr, pos){
     }
     $('#field').html(new_table);
     $('#field tr[posy={y}] td[posx={x}] div'.format({x:pos[0], y:pos[1]})).text('@');
+}
+
+function view_update_creature(){
+    $('#character_position').text(game_controller.creature.coords);
 }
 
 function sq_dist(p1, p2){
