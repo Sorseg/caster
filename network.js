@@ -25,6 +25,7 @@ function NetworkClient(){
         if (document.location.protocol == 'file:'){
             address = 'ws://127.1:7778';
         }
+        log("Conneting to "+address)
         self.ws = new WebSocket(address);
         self.ws.onopen = function(){
             self.state = STATE_CONNECTED;
