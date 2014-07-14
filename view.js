@@ -1,3 +1,5 @@
+var view = {}
+
 String.prototype.format = function(vars){
     return this.replace(/{(.*?)}/g, function(m, k){return vars[k]})
 }
@@ -19,7 +21,7 @@ function show_element(el){
 }
 
 function log(msg){
-    $('#console_output').append(msg+'\n');
+    $('#console_output').append(msg+'<br>');
 }
 
 function view_update_status(){
@@ -99,6 +101,12 @@ function get_coords(td){
     var x = td.attr('posx');
     var y = td.parent().attr('posy');
     return [x, y];
+}
+
+view.error = function(err){
+    var span = $('<span>').addClass('red');
+    span.text(err);
+    $('#console_output').append(span).append('<br>');
 }
 
 

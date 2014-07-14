@@ -25,7 +25,7 @@ function NetworkClient(){
         if (document.location.protocol == 'file:'){
             address = 'ws://127.1:7778';
         }
-        log("Conneting to "+address)
+        log("Connecting to "+address)
         self.ws = new WebSocket(address);
         self.ws.onopen = function(){
             self.state = STATE_CONNECTED;
@@ -53,12 +53,8 @@ function NetworkClient(){
                 game_controller.state = STATE_LOGGED_IN;
                 break;
                 
-            case 'nocreature':
-                game_controller.login_fail(message_type);
-                break;
-                
-            case 'already logged in':
-                game_controller.login_fail(message_type);
+            case 'error':
+                view.error(msg.msg)
                 break;
                 
             case 'environment':
