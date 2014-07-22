@@ -39,7 +39,8 @@ function GameController(){
     
     self.walk = function(coords){
         network_client.ws.send(JSON.stringify({
-            what:"walk",
+            what:"action",
+            type:"walk",
             where:coords
         }))
     }
