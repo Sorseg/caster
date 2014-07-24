@@ -53,7 +53,6 @@ register_event(EVENT_CONN_LOST, on_connection_lost);
 
 
 function on_login(evt, creature){
-    //TODO: update gui according to character;
     hide_element($('#login_form'));
     show_element($('#game_board'));
     localStorage.setItem('username', $('#login').val());
@@ -66,6 +65,7 @@ register_event(EVENT_LOGIN, on_login);
 
 view.terrain_redraw = function(terr, pos){
     var new_table = $('<tbody>');
+    var max_dst = Math.pow(game_controller.creature.sight, 2);
     for(var y = pos[1]-SIZE; y <= pos[1]+SIZE; y++){
         var line = $('<tr>').attr('posy', y).appendTo(new_table);
         for(var x = pos[0]-SIZE; x <= pos[0]+SIZE; x++){
@@ -79,7 +79,17 @@ view.terrain_redraw = function(terr, pos){
                    (point[3] == 'floor')){
                     cell.addClass("walkable");
                 }
-                cell.css("background","rgb("+point.slice(0,3).join(',')+")");
+                var color = '';
+                if(sq_dist([x, y], game_controller.creature.coords) > max_dst){
+                    color = [80,80,80];
+                } else {
+                    color = point.slice(0, 3);
+                }
+                var color_text = "rgb({r},{g},{b})".format({r:color[0],
+                                                            g:color[1],
+                                                            b:color[2]
+                                                           });
+                cell.css("background", color_text);
                 div.html(terr_chars[point[3]]);
             }
         }
@@ -106,8 +116,12 @@ view.get_coords = function(td){
     return [x, y];
 }
 
+view.get_td = function(x, y){
+    return $('#field tr[posy={y}] td[posx={x}]'.format({x:x, y:y}))
+}
+
 view.place = function(x, y, char){
-    $('#field tr[posy={y}] td[posx={x}] div'.format({x:x, y:y})).text(char);
+    view.get_td(x, y).find('div').text(char);
 }
 
 view.error = function(err){
@@ -117,14 +131,12 @@ view.error = function(err){
 }
 
 view.draw_objects = function(objects){
-    $.each(objects,function(coord, obj){
-        c = $.map(coord.split(','), function(i){return parseInt(i)});
-        view.place(c[0], c[1], 'z');
-        log(c);
+    
+    $.each(objects, function(id, obj){
+        view.place(obj.pos[0], obj.pos[1], 'z');
     });
         
 }
-
 
 
 $(function(){

@@ -24,6 +24,7 @@ function GameController(){
     var self = this;
     self.state = STATE_LOGGED_OUT;
     self.terrain = {};
+    self.objects = {};
     self.creature = null;
     
     self.logout = function(){
@@ -35,10 +36,10 @@ function GameController(){
     self.update_terrain = function(terr){
         var objects = terr.objects;
         delete terr.objects;
-        log(JSON.stringify(objects));
         $.extend(self.terrain, terr);
+        $.extend(self.objects, objects);
         view.terrain_redraw(self.terrain, self.creature.coords);
-        view.draw_objects(objects);
+        view.draw_objects(self.objects);
     }
     
     self.walk = function(coords){
