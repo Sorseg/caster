@@ -21,7 +21,9 @@ function show_element(el){
 }
 
 function log(msg){
-    $('#console_output').append(msg+'<br>');
+    var co = $('#console_output');
+    co.append(msg+'<br>');
+    co.scrollTop(co[0].scrollHeight);
 }
 
 function view_update_status(){
@@ -56,13 +58,13 @@ function on_login(evt, creature){
     show_element($('#game_board'));
     localStorage.setItem('username', $('#login').val());
     $('#character_name').text(creature.name);
-    view_update_creature();
+    view.update_creature();
 }
 
 register_event(EVENT_LOGIN, on_login);
 
 
-function terrain_redraw(terr, pos){
+view.terrain_redraw = function(terr, pos){
     var new_table = $('<tbody>');
     for(var y = pos[1]-SIZE; y <= pos[1]+SIZE; y++){
         var line = $('<tr>').attr('posy', y).appendTo(new_table);
@@ -83,10 +85,11 @@ function terrain_redraw(terr, pos){
         }
     }
     $('#field').html(new_table);
-    $('#field tr[posy={y}] td[posx={x}] div'.format({x:pos[0], y:pos[1]})).text('@');
+    view.place(pos[0], pos[1], '@');
+    //$('#field tr[posy={y}] td[posx={x}] div'.format({x:pos[0], y:pos[1]})).text('@');
 }
 
-function view_update_creature(){
+view.update_creature = function(){
     $('#character_position').text(game_controller.creature.coords);
 }
 
@@ -97,16 +100,29 @@ function sq_dist(p1, p2){
 }
 
 
-function get_coords(td){
+view.get_coords = function(td){
     var x = td.attr('posx');
     var y = td.parent().attr('posy');
     return [x, y];
+}
+
+view.place = function(x, y, char){
+    $('#field tr[posy={y}] td[posx={x}] div'.format({x:x, y:y})).text(char);
 }
 
 view.error = function(err){
     var span = $('<span>').addClass('red');
     span.text(err);
     $('#console_output').append(span).append('<br>');
+}
+
+view.draw_objects = function(objects){
+    $.each(objects,function(coord, obj){
+        c = $.map(coord.split(','), function(i){return parseInt(i)});
+        view.place(c[0], c[1], 'z');
+        log(c);
+    });
+        
 }
 
 
@@ -136,7 +152,7 @@ $(function(){
     $('#field').on('click', 'td', function(evt){
         var td = $(evt.target).parents('td');
         if(td.hasClass('walkable')){
-            game_controller.walk(get_coords(td));
+            game_controller.walk(view.get_coords(td));
         }
     });
     

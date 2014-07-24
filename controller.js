@@ -33,8 +33,12 @@ function GameController(){
     register_event(EVENT_CONN_LOST, self.logout)
     
     self.update_terrain = function(terr){
+        var objects = terr.objects;
+        delete terr.objects;
+        log(JSON.stringify(objects));
         $.extend(self.terrain, terr);
-        terrain_redraw(self.terrain, self.creature.coords);
+        view.terrain_redraw(self.terrain, self.creature.coords);
+        view.draw_objects(objects);
     }
     
     self.walk = function(coords){

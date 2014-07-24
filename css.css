@@ -90,6 +90,7 @@ input, textarea, button {
     box-sizing: border-box;
     background-color: #777;
     font-family: monospace;
+    overflow: auto;
     
 }
 

@@ -63,7 +63,7 @@ function NetworkClient(){
                 
             case 'walk':
                 game_controller.creature.coords = $.map(msg.to, function(val){return parseInt(val)});
-                view_update_creature();
+                view.update_creature();
                 break;
                 
             case undefined:
