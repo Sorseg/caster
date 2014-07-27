@@ -65,7 +65,7 @@ register_event(EVENT_LOGIN, on_login);
 
 view.terrain_redraw = function(terr, pos){
     var new_table = $('<tbody>');
-    var max_dst = Math.pow(game_controller.creature.sight, 2);
+    var max_dst = game_controller.creature.sight*game_controller.creature.sight;
     for(var y = pos[1]-SIZE; y <= pos[1]+SIZE; y++){
         var line = $('<tr>').attr('posy', y).appendTo(new_table);
         for(var x = pos[0]-SIZE; x <= pos[0]+SIZE; x++){
@@ -101,6 +101,8 @@ view.terrain_redraw = function(terr, pos){
 
 view.update_creature = function(){
     $('#character_position').text(game_controller.creature.coords);
+    $('#character_hp').text(game_controller.creature.hp);
+    $('#character_max_hp').text(game_controller.creature.max_hp);
 }
 
 function sq_dist(p1, p2){
