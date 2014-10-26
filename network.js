@@ -66,6 +66,10 @@ function NetworkClient(){
                 view.update_creature();
                 break;
                 
+            case 'event':
+                game_controller['do_'+msg.type](msg);
+                break;
+                
             case undefined:
                 log("Undefined message type:"+" "+JSON.stringify(msg))
                 break;

@@ -29,6 +29,8 @@ function GameController(){
     
     self.logout = function(){
         self.state = STATE_LOGGED_OUT;
+        self.terrain = {};
+        self.objects = {};
         trigger_event(EVENT_LOGOUT);
     }
     register_event(EVENT_CONN_LOST, self.logout)
@@ -50,12 +52,26 @@ function GameController(){
         }))
     }
     
+    self.do_death = function(msg){
+        delete self.objects[msg.who];
+        view.terrain_redraw(self.terrain, self.creature.coords);
+    }
+    
+    self.attack = function(id){
+        network_client.ws.send(JSON.stringify({
+            what:"action",
+            type:"attack",
+            who:id
+        }))
+    }
+    
     self.login_fail = function(reason){
         if (self.state == STATE_LOGGING_IN){
             log("Login failed: "+reason);
             self.logout();
         }
     }
+    
 }
 
 

@@ -62,7 +62,6 @@ function on_login(evt, creature){
 
 register_event(EVENT_LOGIN, on_login);
 
-
 view.terrain_redraw = function(terr, pos){
     var new_table = $('<tbody>');
     var max_dst = game_controller.creature.sight*game_controller.creature.sight;
@@ -111,7 +110,6 @@ function sq_dist(p1, p2){
     return dx*dx+dy*dy;
 }
 
-
 view.get_coords = function(td){
     var x = td.attr('posx');
     var y = td.parent().attr('posy');
@@ -135,7 +133,10 @@ view.error = function(err){
 view.draw_objects = function(objects){
     
     $.each(objects, function(id, obj){
-        view.place(obj.pos[0], obj.pos[1], 'z');
+        var td = view.get_td(obj.pos[0], obj.pos[1]);
+        td.find('div').text('Z');
+        td.addClass('attackable')
+        td.attr('id', id);
     });
         
 }
@@ -165,8 +166,13 @@ $(function(){
     
     $('#field').on('click', 'td', function(evt){
         var td = $(evt.target).parents('td');
+        
         if(td.hasClass('walkable')){
-            game_controller.walk(view.get_coords(td));
+            if(td.hasClass('attackable')){
+               game_controller.attack(td.attr('id'));
+            } else {
+                game_controller.walk(view.get_coords(td));
+            }
         }
     });
     
