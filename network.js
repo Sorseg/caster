@@ -61,6 +61,10 @@ function NetworkClient(){
                 game_controller.update_terrain(msg);
 				break;
                 
+            case 'objects':
+                game_controller.update_objects(msg.objects);
+                break;
+                
             case 'walk':
                 game_controller.creature.coords = $.map(msg.to, function(val){return parseInt(val)});
                 view.update_creature();

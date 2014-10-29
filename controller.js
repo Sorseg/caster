@@ -39,8 +39,11 @@ function GameController(){
         var objects = terr.objects;
         delete terr.objects;
         $.extend(self.terrain, terr);
-        $.extend(self.objects, objects);
         view.terrain_redraw(self.terrain, self.creature.coords);
+    }
+    
+    self.update_objects = function(obj){
+        $.extend(self.objects, obj);
         view.draw_objects(self.objects);
     }
     
