@@ -1,5 +1,7 @@
 "use strict";
 
+var PROTO_VERSION = 1;
+
 
 var STATE_CONNECTED = 'Connected',
     STATE_DISCONNECTED = 'Disconnected',
@@ -76,6 +78,12 @@ function NetworkClient(){
                 
             case undefined:
                 log("Undefined message type:"+" "+JSON.stringify(msg))
+                break;
+                
+            case 'protocol':
+                if(msg.version != PROTO_VERSION){
+                    log("Warning! Server protocol: "+msg.version+", client protocol: "+PROTO_VERSION);
+                }
                 break;
                 
             default:
