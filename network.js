@@ -81,9 +81,7 @@ function NetworkClient(){
                 break;
                 
             case 'protocol':
-                if(msg.version != PROTO_VERSION){
-                    log("Warning! Server protocol: "+msg.version+", client protocol: "+PROTO_VERSION);
-                }
+                    log("Server protocol: "+msg.version+", client protocol: "+PROTO_VERSION);
                 break;
                 
             default:
